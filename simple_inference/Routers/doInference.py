@@ -1,4 +1,4 @@
-from schemas import Wine,House
+from Schemas.schemas import Wine,House
 import os
 from fastapi import APIRouter, FastAPI, HTTPException
 
@@ -20,7 +20,7 @@ async def train_model(wine: Wine, model:str='wine'):
     return int(model_loaded.predict(pd.DataFrame([wine.dict()]))[0])
 
 @router.post("/house_price")
-async def train_model(house: House, model:str='house'):
+async def train_model(house: House, model:str='house_price'):
     if not os.path.isfile(model+'_model.joblib'):
         raise HTTPException(status_code=500, detail="Unkown model: "+ model+" Try to train model first.")
     model_loaded = load(model+'_model.joblib')

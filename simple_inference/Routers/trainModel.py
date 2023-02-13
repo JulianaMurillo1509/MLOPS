@@ -22,8 +22,8 @@ router = APIRouter(
 url_wine='https://docs.google.com/uc?export=download&id=1ZsJWYHxcEdJQdb62diQf8o3fvXFawt1a'
 url_house_price='https://docs.google.com/uc?export=download&id=1WsTJN-u4YRrPKqJTp8h8iUSAdfJC8_qn'
 
-def get_data(data:str='wine'):
-    if data=='wine' or data=='houseprice':
+def get_data(data):
+    if data=='wine' or data=='house_price':
         if not os.path.isfile(data+'.csv'):
             url = url_wine if data == 'wine' else url_house_price
             r = requests.get(url, allow_redirects=True)
@@ -33,7 +33,7 @@ def get_data(data:str='wine'):
 
 @router.get("/wine")
 async def train_model(data:str='wine'):
-    get_data()
+    get_data(data)
     if not os.path.isfile(data+'.csv'):
         raise HTTPException(status_code=500, detail="Unkown dataset: "+ data)
     df = pd.read_csv('wine.csv')
@@ -50,11 +50,11 @@ async def train_model(data:str='wine'):
     return model_metrics
 
 @router.get("/house_price")
-async def train_model(data:str='houseprice'):
-    get_data()
+async def train_model(data:str='house_price'):
+    get_data(data)
     if not os.path.isfile(data+'.csv'):
         raise HTTPException(status_code=500, detail="Unkown dataset: "+ data)
-    df = pd.read_csv('houseprice.csv')
+    df = pd.read_csv('house_price.csv')
     df.columns = df.columns.str.replace(' ', '_')
     X = df.drop(['date','price','street','city','statezip','country'], axis=1)
     y = df['price']
