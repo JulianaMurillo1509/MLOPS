@@ -4,3 +4,15 @@ __pycache__/
 *.joblib
 .ipynb_checkpoints/
 *.pbtxt
+pipeline/
+Proyecto_1/
+*.csv
+*.joblib
+*.ipynb_checkpoints/
+*pipeline/
+*.pbtxt
+*.log
+*.pkl
+*.data
+data/
+*/data/
