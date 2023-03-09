@@ -1,6 +1,11 @@
 import tensorflow as tf
 import pandas as pd
 from google.protobuf.json_format import MessageToDict
+from typing import List,Text
+from ml_metadata import proto
+from ml_metadata.proto import metadata_store_pb2
+from ml_metadata.proto import metadata_store_service_pb2
+from ml_metadata.proto import metadata_store_service_pb2_grpc
 
 def get_records(dataset, num_records):
     '''Extracts records from the given dataset.
@@ -65,3 +70,28 @@ def display_properties(store, node):
             v.string_value if v.HasField('string_value') else v.int_value)
     
     return pd.DataFrame(data=table)
+
+def follow_artifacts(store,artifacts):
+    table = {'properties': [], 'id': [], 'name': [], 'uri': []}
+    
+    for a in artifacts:
+        table['id'].append(a.id)
+        table['name'].append(a.name)
+        table['uri'].append(a.uri)
+        table['properties'].append(a.custom_properties)
+        
+    
+    return pd.DataFrame(data=table)
+
+def followArtifacts2(store,artifacts,uri):
+    table = {'artifact id': [], 'type': [], 'uri': []}
+    
+    ids_Transform = [o.id for o in artifacts]
+    execution_events_Transform = store.get_events_by_execution_ids(ids_Transform)
+    ids_Artifacts_Transform = [o.artifact_id for o in execution_events_Transform]
+    list_artifacts_Transform= store.get_artifacts_by_id(ids_Artifacts_Transform)
+    result = display_artifacts(store,list_artifacts_Transform,uri)
+
+  
+    return result
+    
