@@ -9,7 +9,7 @@ from sklearn import metrics
 from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, Table
+from sqlalchemy import create_engine, Table,text
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi import FastAPI
 import pandas as pd
@@ -78,7 +78,8 @@ def insert_data(penguins):
     penguins_table = Table('penguins',Base.metadata, autoload=True)
     # Print schema of the penguins table
     print("penguins_table:",penguins_table)
-
+    # Create a connection object
+    print("*** example query results:",session.execute(text('SELECT * FROM penguins')))
 
     for i, row in penguins.iterrows():
         print("***i:",i)
@@ -94,6 +95,7 @@ def insert_data(penguins):
         session.add(penguin)
     print("***session before commit***",session)
     session.commit()
+    print("*** example query results:", session.execute(text('SELECT * FROM penguins')))
     session.close()
 
 
@@ -126,10 +128,14 @@ def get_data(data):
 
 
 def read_data(data):
-    print('***read_data***')
+    print('***read_data***',data)
     session, engine = connect_database()
     print('***session***',session)
-    penguins = session.query(data).all()
+    # Execute a SELECT query on the penguins table
+    query = text("SELECT * FROM penguins")
+    result = session.execute(query)
+    # Create a pandas DataFrame from the query result
+    penguins = pd.DataFrame(result.fetchall(), columns=result.keys())
     print('***penguins data:***', penguins.head())
     for penguin in penguins[:-2]:
         print(penguin.species, penguin.island, penguin.bill_length_mm, penguin.bill_depth_mm, penguin.flipper_length_mm,
