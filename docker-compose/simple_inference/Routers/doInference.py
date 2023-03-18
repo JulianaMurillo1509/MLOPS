@@ -23,3 +23,5 @@ async def train_model(wine: Wine, model:str='wine'):
     model_loaded = load(model+'_model.joblib')
     return int(model_loaded.predict(pd.DataFrame([wine.dict()]))[0])
 
+
+
