@@ -32,7 +32,6 @@ def connect_database():
     session = Session()
     print("session",session)
     print("engine",engine)
-
     return session,engine
 
 
@@ -63,25 +62,36 @@ def insert_data(penguins):
         id = Column(Integer, primary_key=True, index=True)
         species = Column(String)
         island = Column(String)
-        bill_length_mm=Column(Integer)
-        bill_depth_mm = Column(Integer)
-        flipper_length_mm=Column(Integer)
-        body_mass_g = Column(Integer)
+        bill_length_mm=Column(float)
+        bill_depth_mm = Column(float)
+        flipper_length_mm=Column(float)
+        body_mass_g = Column(float)
+        sex = Column(String)
+        year = Column(Integer)
 
     print('Base',Base)
     # Create table if it doesn't exist
     Base.metadata.create_all(bind=engine)
     # Insert the data into the table
     print('Insert the data into the table')
+    penguins_table = Table('penguins',Base.metadata, autoload=True)
+    # Print schema of the penguins table
+    print("penguins_table:",penguins_table.__table__)
+
+
     for i, row in penguins.iterrows():
+        print("***i:",i)
+        #species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year
         penguin = Penguin(species=row['species'],
                           island=row['island'],
                           bill_length_mm=row['bill_length_mm'],
                           bill_depth_mm=row['bill_depth_mm'],
                           flipper_length_mm=row['flipper_length_mm'],
-                          body_mass_g=row['body_mass_g'])
+                          body_mass_g=row['body_mass_g'],
+                          sex = row['sex'],
+                          year = row['year'])
         session.add(penguin)
-
+    print("***session before commit***",session)
     session.commit()
     session.close()
 
@@ -91,6 +101,7 @@ def get_data(data):
     if data=='penguins':
         penguins = pd.read_csv(
             'https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv')
+        #species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year
         print('penguins',penguins.head())
         insert_data(penguins)
         print("finish insert")
@@ -101,10 +112,12 @@ def get_data(data):
 def read_data(data):
     print('***read_data***')
     session, engine = connect_database()
+    print('***session***',session)
     penguins = session.query(data).all()
-    for penguin in penguins[:-10]:
+    print('***penguins data:***', penguins.head())
+    for penguin in penguins[:-2]:
         print(penguin.species, penguin.island, penguin.bill_length_mm, penguin.bill_depth_mm, penguin.flipper_length_mm,
-              penguin.body_mass_g, penguin.sex)
+              penguin.body_mass_g, penguin.sex,penguin.year)
     session.close()
     return  penguins
 
@@ -116,9 +129,10 @@ async def root():
 
 @router.get("/train")
 async def train_model(data:str='penguins'):
+    print("***train_model***")
     get_data(data) #get data from source and insert in db
     df = read_data(data)
-    print('df',df.head())
+    print('***df:***',df.head())
     df.columns = df.columns.str.replace(' ', '_')
     X = df.drop('species', axis=1)
     y = df['species']
