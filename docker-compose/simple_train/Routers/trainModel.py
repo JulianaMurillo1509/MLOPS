@@ -131,7 +131,7 @@ async def root():
 async def train_model(data:str='penguins'):
     print("***train_model***")
     get_data(data) #get data from source and insert in db
-    df = read_data(data)
+    df = read_data(data) #read data from data base
     print('***df:***',df.head())
     df.columns = df.columns.str.replace(' ', '_')
     X = df.drop('species', axis=1)

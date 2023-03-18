@@ -1,4 +1,4 @@
-from Schemas.schemas import Wine,House
+from Schemas.schemas import Penguin
 import os
 from fastapi import APIRouter, FastAPI, HTTPException
 
@@ -17,11 +17,11 @@ async def root():
     return {"message": "Hello World inference"}
 
 @router.post("/penguins")
-async def train_model(wine: Wine, model:str='wine'):
+async def test_model(penguin: Penguin, model:str='penguins'):
     if not os.path.isfile(model+'_model.joblib'):
         raise HTTPException(status_code=500, detail="Unkown model: "+ model+" Try to train model first.")
     model_loaded = load(model+'_model.joblib')
-    return int(model_loaded.predict(pd.DataFrame([wine.dict()]))[0])
+    return int(model_loaded.predict(pd.DataFrame([penguin.dict()]))[0])
 
 
 
