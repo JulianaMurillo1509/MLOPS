@@ -77,7 +77,7 @@ def insert_data(penguins):
     print('Insert the data into the table')
     penguins_table = Table('penguins',Base.metadata, autoload=True)
     # Print schema of the penguins table
-    print("penguins_table:",penguins_table.__table__)
+    print("penguins_table:",penguins_table)
 
 
     for i, row in penguins.iterrows():
