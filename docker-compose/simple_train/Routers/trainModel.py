@@ -13,6 +13,7 @@ from sqlalchemy import create_engine, Table
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi import FastAPI
 import pandas as pd
+from sklearn.impute import SimpleImputer
 
 DB_PASSWORD=os.environ['DB_PASSWORD']
 
@@ -96,6 +97,20 @@ def insert_data(penguins):
     session.close()
 
 
+def clean_data(df):
+    # Display the number of missing values in each column
+    print(df.isnull().sum())
+
+    # Create a SimpleImputer object with strategy='mean'
+    imputer = SimpleImputer(strategy='mean')
+
+    # Fit the imputer to the dataset
+    imputer.fit(df[['body_mass_g', 'flipper_length_mm']])
+
+    # Transform the dataset by filling the missing values with the mean
+    df[['body_mass_g', 'flipper_length_mm']] = imputer.transform(df[['body_mass_g', 'flipper_length_mm']])
+    return df
+
 def get_data(data):
     print('***get_data***')
     if data=='penguins':
@@ -103,6 +118,7 @@ def get_data(data):
             'https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv')
         #species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year
         print('penguins',penguins.head())
+        penguins=clean_data(penguins) #clean data
         insert_data(penguins)
         print("finish insert")
     else:
