@@ -153,7 +153,7 @@ async def train_model(data:str='penguins'):
     get_data(data) #get data from source and insert in db
     df = read_data(data) #read data from data base
     print('***df:***',df.head())
-    df.columns = df.columns.str.replace(' ', '_')
+    #df.columns = df.columns.str.replace(' ', '_')
     X = df.drop('species', axis=1)
     y = df['species']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
