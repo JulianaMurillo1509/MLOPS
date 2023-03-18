@@ -137,7 +137,7 @@ def read_data(data):
     # Create a pandas DataFrame from the query result
     penguins = pd.DataFrame(result.fetchall(), columns=result.keys())
     print('***penguins data:***', penguins.head())
-    for penguin in penguins[:-2]:
+    for penguin in penguins:
         print("***penguin***:",penguin)
         print(penguin.species, penguin.island, penguin.bill_length_mm, penguin.bill_depth_mm, penguin.flipper_length_mm,
               penguin.body_mass_g, penguin.sex,penguin.year)
