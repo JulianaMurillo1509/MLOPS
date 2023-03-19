@@ -154,8 +154,16 @@ async def train_model(data:str='penguins'):
     df = read_data(data) #read data from data base
     print('***df:***',df.head())
     #df.columns = df.columns.str.replace(' ', '_')
-    X = df.drop('species', axis=1)
-    y = df['species']
+    species_ = {'Adelie' : 0 , 'Gentoo' : 1, 'Chinstrap': 2}
+    island_ = {'Torgersen': 0 , 'Biscoe': 2, 'Dream': 3}
+    sex_ = {'male':0, 'female': 1}
+    df['species'] = df['species'].map(species_)
+    df['island'] = df['island'].map(island_)
+    df['sex'] = df['sex'].map(sex_)
+    clean_df = df.dropna(axis = 0, how ='any')
+    print('***change df:***',clean_df.head())
+    X = clean_df.drop('species', axis=1)
+    y = clean_df['species']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
     model = SVC()
     model.fit(X_train, y_train)
