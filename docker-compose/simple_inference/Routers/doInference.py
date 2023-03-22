@@ -18,9 +18,12 @@ async def root():
 
 @router.post("/penguins")
 async def test_model(penguin: Penguin, model:str='penguins'):
-    if not os.path.isfile(model+'_model.joblib'):
+    path = "/work2/"
+    print("path:",path+model+'_model.joblib')
+    if not os.path.isfile(path+model+'_model.joblib'):
         raise HTTPException(status_code=500, detail="Unkown model: "+ model+" Try to train model first.")
-    model_loaded = load(model+'_model.joblib')
+    print("loadign mdoel from:",path+model+'_model.joblib')
+    model_loaded = load(path+model+'_model.joblib')
     return int(model_loaded.predict(pd.DataFrame([penguin.dict()]))[0])
 
 

@@ -170,7 +170,9 @@ async def train_model(data:str='penguins'):
     expected_y  = y_test
     predicted_y = model.predict(X_test)
     model_metrics = metrics.classification_report(expected_y, predicted_y, output_dict=True,zero_division=1)
-    dump(model, data+'_model.joblib')
+    path="/work1/"
+    dump(model, path+data+'_model.joblib')
+    print("model trained and safe in :",path+data+'_model.joblib')
     return model_metrics
 
 
