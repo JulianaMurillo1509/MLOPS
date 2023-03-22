@@ -4,7 +4,9 @@ from fastapi import HTTPException, APIRouter
 from sklearn.model_selection import train_test_split
 from joblib import dump
 from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
+import numpy as np
 
 from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.orm import sessionmaker
@@ -107,10 +109,11 @@ def clean_data(df):
     imputer = SimpleImputer(strategy='mean')
 
     # Fit the imputer to the dataset
-    imputer.fit(df[['body_mass_g', 'flipper_length_mm']])
+    colums = ['bill_length_mm','bill_depth_mm','body_mass_g', 'flipper_length_mm']
+    imputer.fit(df[colums])
 
     # Transform the dataset by filling the missing values with the mean
-    df[['body_mass_g', 'flipper_length_mm']] = imputer.transform(df[['body_mass_g', 'flipper_length_mm']])
+    df[colums] = imputer.transform(df[colums])
     return df
 
 def get_data(data):
@@ -119,8 +122,8 @@ def get_data(data):
         penguins = pd.read_csv(
             'https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv')
         #species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year
-        print('penguins',penguins.head())
         penguins=clean_data(penguins) #clean data
+        print('penguins',penguins.head())
         insert_data(penguins)
         print("finish insert")
     else:
@@ -153,19 +156,28 @@ async def train_model(data:str='penguins'):
     get_data(data) #get data from source and insert in db
     df = read_data(data) #read data from data base
     print('***df:***',df.head())
-    #df.columns = df.columns.str.replace(' ', '_')
-    species_ = {'Adelie' : 0 , 'Gentoo' : 1, 'Chinstrap': 2}
-    island_ = {'Torgersen': 0 , 'Biscoe': 2, 'Dream': 3}
-    sex_ = {'male':0, 'female': 1}
-    df['species'] = df['species'].map(species_)
-    df['island'] = df['island'].map(island_)
-    df['sex'] = df['sex'].map(sex_)
-    clean_df = df.dropna(axis = 0, how ='any')
-    print('***change df:***',clean_df.head())
-    X = clean_df.drop('species', axis=1)
-    y = clean_df['species']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
-    model = SVC()
+
+    #cast pandas object to a specified dtype
+    df["species"] = df["species"].astype('category')
+    df["island"] = df["island"].astype('category')
+    df["sex"] = df["sex"].astype('category')
+
+    #. Return Series of codes as well as the index
+    df["island"] = df["island"].cat.codes
+    df["sex"] = df["sex"].cat.codes
+
+    df = df.drop(['id'],axis = 1)
+    
+    #Training
+    X = df.drop(['species'], axis=1)
+    y = df['species']
+    spicies = {'Adelie': 0, 'Chinstrap': 1, 'Gentoo': 2}
+    y = [spicies[item] for item in y]
+    y = np.array(y) 
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=33)
+
+    model = DecisionTreeClassifier(max_depth=5)
     model.fit(X_train, y_train)
     expected_y  = y_test
     predicted_y = model.predict(X_test)

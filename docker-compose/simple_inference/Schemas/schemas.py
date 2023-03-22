@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
 class Penguin(BaseModel):
-    species : str ="Adelie"
     island : str ="Torgersen"
     bill_length_mm : float = 39.1
     bill_depth_mm : float = 18.7
