@@ -41,7 +41,8 @@ async def test_model(penguin: Penguin, model:str='penguins'):
     model_loaded = load(path+model+'_model.joblib')
     species = model_loaded.predict(preparedData)[0]
     result = (spicies_map[species])
-    return ("the penguin specie is:",result)
+    answer = "the penguin specie is:" + result
+    return answer
 
 
 

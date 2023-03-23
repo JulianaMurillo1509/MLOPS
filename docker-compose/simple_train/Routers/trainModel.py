@@ -1,21 +1,17 @@
-import requests
 import os
-from fastapi import HTTPException, APIRouter
+from fastapi import APIRouter, FastAPI, HTTPException
 from sklearn.model_selection import train_test_split
 from joblib import dump
-from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
-import numpy as np
-
-from sqlalchemy import create_engine, Column, Integer, String, Float
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, Table,text
-from fastapi import APIRouter, FastAPI, HTTPException
-from fastapi import FastAPI
-import pandas as pd
 from sklearn.impute import SimpleImputer
+import numpy as np
+import pandas as pd
+
+from sqlalchemy import create_engine, MetaData, Column, Integer, String, Float, Table, text
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import NoSuchTableError
+from sqlalchemy.ext.declarative import declarative_base
 
 DB_PASSWORD=os.environ['DB_PASSWORD']
 
@@ -24,7 +20,6 @@ router = APIRouter(
     prefix="/train_model",
     tags= ['train models']
 )
-
 
 def connect_database():
     print('***connect_database***')
@@ -37,19 +32,25 @@ def connect_database():
     print("engine",engine)
     return session,engine
 
-
+@router.delete("/delete_All_data")
 def delete_data():
     print('***delete_data***')
     session,engine=connect_database()
     # define the table to drop
     # Connect to the database and get a table object
     with engine.connect() as conn:
+     try:
         # Get the table object
-        table = Table('penguins', autoload=True, autoload_with=engine)
+        metadata = MetaData()
+        table = Table('penguins', metadata, autoload_with=engine)
         # Drop the table
-        table.drop()
+        table.drop(bind=conn)
+     except NoSuchTableError as  e:
+            raise HTTPException(status_code=500, detail= 'table does not exist!' )  
+        
     session.close()
-
+        
+    return "data deletion successful"
 
 
 def insert_data(penguins):
