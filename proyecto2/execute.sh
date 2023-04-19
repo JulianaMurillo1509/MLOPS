@@ -36,6 +36,7 @@ if microk8s status | grep -q "microk8s is running"; then
     # execute compose to generate yaml
     chmod u+w komposefiles/
     kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
+    microk8s kubectl apply -f komposefiles/
     if ! microk8s kubectl get pods | grep -q  "Running"; then
       echo "Kubernetes API server is not ready."
       exit 1
