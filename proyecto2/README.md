@@ -2,6 +2,7 @@
 Repositorio con ejercicios y proyectos de la case de tópicos avanzados de tópicos de IA
 
 # Estructura del repositorio
+* ubicarse en la carpeta proyecto2
 
 - Proyecto 2 : Proyecto despliega servicios en k8
 - para ejecutar todo desde cero usar ./execute.sh en ocasiones es requerido darle permisos necesarios usando 
