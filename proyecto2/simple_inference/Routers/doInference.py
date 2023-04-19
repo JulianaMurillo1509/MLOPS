@@ -4,7 +4,19 @@ from fastapi import APIRouter, FastAPI, HTTPException
 import numpy as np
 import pandas as pd
 from joblib import load
+import numpy as np
+import pandas as pd
 
+from sqlalchemy import create_engine, MetaData, Column, Integer, String, Float, Table, text
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import NoSuchTableError
+from sqlalchemy.ext.declarative import declarative_base
+
+
+
+DB_PASSWORD=os.environ['DB_PASSWORD']
+DB_HOST=os.environ['DB_HOST']
+DB_PORT=os.environ['DB_PORT']
 
 app = FastAPI()
 router = APIRouter(
@@ -27,6 +39,69 @@ def prepare_sample(penguin: Penguin): #prepare data before prediction
         sample = np.array([np.asarray(sample)]).reshape(-1, 1)
 
         return sample.reshape(1, -1)
+
+def connect_database():
+    print('***connect_database***')
+    print("DB_HOST", DB_HOST)
+    print("DB_PORT", DB_PORT)
+    # Connect to the database
+    print('DB_PASSWORD',DB_PASSWORD)
+    engine = create_engine('postgresql://myuser:mypassword@DB_HOST:DB_PORT/mydatabase')
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    print("session",session)
+    print("engine",engine)
+    return session,engine
+
+
+def insert_data(penguins):
+    print('***insert_data***')
+    # Connect to the database
+    session, engine = connect_database()
+    print("***df penguins***", penguins.info())
+    # Define the table schema
+    Base = declarative_base()
+    # Define penguins table model
+    class Penguin(Base):
+        __tablename__ = 'penguins'
+        id = Column(Integer, primary_key=True, index=True)
+        species = Column(String)
+        island = Column(String)
+        bill_length_mm=Column(Float)
+        bill_depth_mm = Column(Float)
+        flipper_length_mm=Column(Float)
+        body_mass_g = Column(Float)
+        sex = Column(String)
+        year = Column(Integer)
+
+    print('Base',Base)
+    # Create table if it doesn't exist
+    Base.metadata.create_all(bind=engine)
+    # Insert the data into the table
+    print('Insert the data into the table')
+    penguins_table = Table('penguins',Base.metadata, autoload=True)
+    # Print schema of the penguins table
+    print("penguins_table:",penguins_table)
+    # Create a connection object
+    print("*** example query results:",session.execute(text('SELECT * FROM penguins order by id desc limit 10' )))
+
+    for i, row in penguins.iterrows():
+        print("***i:",i)
+        #species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year
+        penguin = Penguin(species=row['species'],
+                          island=row['island'],
+                          bill_length_mm=row['bill_length_mm'],
+                          bill_depth_mm=row['bill_depth_mm'],
+                          flipper_length_mm=row['flipper_length_mm'],
+                          body_mass_g=row['body_mass_g'],
+                          sex = row['sex'],
+                          year = row['year'])
+        session.add(penguin)
+    print("***session before commit***",session)
+    session.commit()
+    print("*** example query results:", session.execute(text('SELECT * FROM penguins')))
+    session.close()
+
 
 @router.post("/penguins")
 async def test_model(penguin: Penguin, model:str='penguins'):

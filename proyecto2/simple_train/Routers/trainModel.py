@@ -30,7 +30,7 @@ def connect_database():
     print("DB_PORT", DB_PORT)
     # Connect to the database
     print('DB_PASSWORD',DB_PASSWORD)
-    engine = create_engine('postgresql://myuser:mypassword@DB_HOST:DB_PORT/mydatabase')
+    engine = create_engine('postgresql://myuser:'+DB_PASSWORD+'@'+DB_HOST+':'+DB_PORT+'/mydatabase')
     Session = sessionmaker(bind=engine)
     session = Session()
     print("session",session)
@@ -122,6 +122,7 @@ def clean_data(df):
     df[colums] = imputer.transform(df[colums])
     return df
 
+
 def get_data(data):
     print('***get_data***')
     if data=='penguins':
@@ -154,6 +155,18 @@ def read_data(data):
 @app.get("/")
 async def root():
     return {"message": "Hello  training penguins"}
+
+
+@router.post("/insertdataFromUrl")
+async def get_data(data:str='penguins'):
+    try:
+        print("get_data:",data)
+        get_data(data)
+    except Exception as e:
+        print("ERROR",e)
+        return e
+    return ("data inserted from url OK")
+
 
 @router.post("/uploadfile/insertDatainDB")
 async def create_upload_file(file: UploadFile = File(...)):

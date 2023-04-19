@@ -26,7 +26,18 @@ spec:
         io.kompose.service: api-inference
     spec:
       containers:
-        - image: leodocker2021/my-repo-mlops-api-inference:latest
+        - env:
+            - name: DB_HOST
+              value: db
+            - name: DB_NAME
+              value: mydatabase
+            - name: DB_PASSWORD
+              value: mypassword
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: myuser
+          image: leodocker2021/my-repo-mlops-api-inference:latest
           name: api-inference
           ports:
             - containerPort: 83

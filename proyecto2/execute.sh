@@ -11,9 +11,11 @@ ps aux | grep api-train
 ps aux | grep api-inference
 ps aux | grep frontend
 
-
+docker rmi leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-api-frontend:latest
 docker-compose build
-
+docker image inspect leodocker2021/my-repo-mlops-api-inference:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-api-train:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-api-frontend:latest | grep -E 'Id|Created'
 # Tag the built images with the latest tag
 echo "Tagging the built images with the latest tag..."
 docker tag leodocker2021/my-repo-mlops-api-inference:latest   leodocker2021/my-repo-mlops-api-inference:latest
@@ -32,7 +34,7 @@ if microk8s status | grep -q "microk8s is running"; then
     echo "MicroK8s is running"
     echo "Checking if MicroK8s kubectl get nodes are ready.."
     # Check if Kubernetes API server is ready
-    sleep 30s
+    sleep 10s
     # execute compose to generate yaml
     chmod u+w komposefiles/
     kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
@@ -53,7 +55,7 @@ if microk8s status | grep -q "microk8s is running"; then
           break
       else
           echo "Waiting for all pods to start"
-          sleep 15
+          sleep 30
       fi
     done
     echo "executing k8_start.."
