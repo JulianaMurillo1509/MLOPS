@@ -10,12 +10,6 @@ ps aux | grep api-train
 ps aux | grep api-inference
 ps aux | grep frontend
 
-kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
-
-# Apply the Kubernetes manifests to MicroK8s
-echo "Applying the Kubernetes manifests to MicroK8s..."
-microk8s kubectl apply -f komposefiles/
-
 echo "Forwarding traffic from the services to your local machine..."
 
 echo "Checking if MicroK8s cluster is running..."
@@ -40,3 +34,7 @@ echo "MicroK8s cluster is running. Forwarding traffic from the services to your 
 microk8s kubectl port-forward --address 0.0.0.0 service/api-train 8502:8502 &
 microk8s kubectl port-forward --address 0.0.0.0 service/api-inference 8503:8503 &
 microk8s kubectl port-forward --address 0.0.0.0 service/frontend 8501:8501 &
+
+
+echo "everything ok..."
+exit 1
