@@ -1,18 +1,6 @@
 version: '3'
 
 services:
-  frontend:
-    build: 
-      context: .
-      dockerfile: simple_UI/Dockerfile
-    image: leodocker2021/my-repo-mlops-api-frontend:latest
-    ports:
-      - 8501:8501
-    depends_on:
-      - api-train
-      - api-inference
-    volumes:
-        - my-data:/work0
   api-train:
     build:
       context: .
