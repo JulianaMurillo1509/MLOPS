@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  api-train:
+    build:
+      context: .
+      dockerfile: simple_train/Dockerfile
+    image: leodocker2021/my-repo-mlops-api-train:latest
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: mydatabase
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+    volumes:
+      - my-data:/work1
+    ports:
+      - "8502:82"
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+
+  api-inference:
+    build:
+      context: .
+      dockerfile: simple_inference/Dockerfile
+    image: leodocker2021/my-repo-mlops-api-inference:latest
+    ports:
+      - "8503:83"
+    depends_on:
+      - db
+    volumes:
+      - my-data:/work2
+volumes:
+  my-data:
