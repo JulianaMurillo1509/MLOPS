@@ -1,21 +1,23 @@
-version: '4'
+version: '3'
 
 services:
   frontend:
     build: 
       context: .
       dockerfile: simple_UI/Dockerfile
+    image: leodocker2021/my-repo-mlops-api-frontend:latest
     ports:
       - 8501:8501
     depends_on:
-      - api_train
-      - api_inference
+      - api-train
+      - api-inference
     volumes:
         - my-data:/work0
-  api_train:
+  api-train:
     build:
       context: .
       dockerfile: simple_train/Dockerfile
+    image: leodocker2021/my-repo-mlops-api-train:latest
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -25,7 +27,7 @@ services:
     volumes:
       - my-data:/work1
     ports:
-      - "8000:80"
+      - "8502:82"
     depends_on:
       - db
   db:
@@ -38,12 +40,13 @@ services:
     ports:
       - "5432:5432"
 
-  api_inference:
+  api-inference:
     build:
       context: .
       dockerfile: simple_inference/Dockerfile
+    image: leodocker2021/my-repo-mlops-api-inference:latest
     ports:
-      - "8001:81"
+      - "8503:83"
     depends_on:
       - db
     volumes:
