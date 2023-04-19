@@ -32,7 +32,7 @@ if microk8s status | grep -q "microk8s is running"; then
     echo "MicroK8s is running"
     echo "Checking if MicroK8s kubectl get nodes are ready.."
     # Check if Kubernetes API server is ready
-    sleep 60s
+    sleep 120s
     if ! microk8s kubectl get pods | grep -q  "Running"; then
       echo "Kubernetes API server is not ready."
       exit 1
