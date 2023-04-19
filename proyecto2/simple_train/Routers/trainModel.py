@@ -150,7 +150,7 @@ def read_data(data):
 async def root():
     return {"message": "Hello  training penguins"}
 
-@router.post("/uploadfile/insertDatainDB")
+@router.post("/uploadfile/")
 async def create_upload_file(file: UploadFile = File(...)):
         csv = pd.read_csv(file.file)
         penguins=clean_data(csv) #clean data
