@@ -11,16 +11,6 @@ ps aux | grep api-inference
 ps aux | grep frontend
 
 echo "Forwarding traffic from the services to your local machine..."
-
-echo "Checking if MicroK8s cluster is running..."
-
-# Check if MicroK8s is running#
-#if ! microk8s status --wait-ready --timeout 30s > /dev/null 2>&1; then
-#  echo "MicroK8s is not running or failed to start within the timeout period of 60 seconds."
-#  exit 1
-#fi
-sleep 30s
-
 echo "Checking if MicroK8s kubectl get nodes are ready.."
 # Check if Kubernetes API server is ready
 if ! microk8s kubectl get nodes > /dev/null 2>&1; then

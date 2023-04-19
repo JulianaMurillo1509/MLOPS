@@ -14,6 +14,9 @@ from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
 DB_PASSWORD=os.environ['DB_PASSWORD']
+DB_HOST=os.environ['DB_HOST']
+DB_PORT=os.environ['DB_PORT']
+
 
 app = FastAPI()
 router = APIRouter(
@@ -23,9 +26,11 @@ router = APIRouter(
 
 def connect_database():
     print('***connect_database***')
+    print("DB_HOST", DB_HOST)
+    print("DB_PORT", DB_PORT)
     # Connect to the database
     print('DB_PASSWORD',DB_PASSWORD)
-    engine = create_engine('postgresql://myuser:mypassword@db/mydatabase')
+    engine = create_engine('postgresql://myuser:mypassword@DB_HOST:DB_PORT/mydatabase')
     Session = sessionmaker(bind=engine)
     session = Session()
     print("session",session)

@@ -32,13 +32,14 @@ if microk8s status | grep -q "microk8s is running"; then
     echo "MicroK8s is running"
     echo "Checking if MicroK8s kubectl get nodes are ready.."
     # Check if Kubernetes API server is ready
-    sleep 90s
+    sleep 30s
     # execute compose to generate yaml
     chmod u+w komposefiles/
     kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
     # Apply the Kubernetes manifests to MicroK8s
     echo "Applying the Kubernetes manifests to MicroK8s..."
     microk8s kubectl apply -f komposefiles/
+    sleep 30s
     while true; do
       # Get the status of all pods
       status=$(microk8s kubectl get pods)
@@ -55,9 +56,6 @@ if microk8s status | grep -q "microk8s is running"; then
           sleep 15
       fi
     done
-    sleep 60s
-
-
     echo "executing k8_start.."
     source k8_start.sh
     exit 1
