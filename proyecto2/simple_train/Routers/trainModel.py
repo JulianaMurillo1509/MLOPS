@@ -65,6 +65,8 @@ def insert_data(covertype):
     print('***insert_data***')
     # Connect to the database
     session, engine = connect_database()
+    print("session",session)
+    print("engine", engine)
     print("***df covertype***", covertype.info())
     # Define the table schema
     Base = declarative_base()
