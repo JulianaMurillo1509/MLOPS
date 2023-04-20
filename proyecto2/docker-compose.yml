@@ -11,6 +11,8 @@ services:
     depends_on:
       - api-train
       - api-inference
+      - api-store-info
+      - adminer
     volumes:
         - my-data:/work0
 
@@ -27,6 +29,7 @@ services:
       DB_PASSWORD: mypassword
     volumes:
       - my-data:/work1
+      - my-data:/inference
     ports:
       - "8502:82"
     depends_on:
@@ -58,5 +61,40 @@ services:
       - db
     volumes:
       - my-data:/work2
+      - my-data:/inference
+
+  api-store-info:
+    build:
+      context: .
+      dockerfile: simple_store_info/Dockerfile
+    image: leodocker2021/my-repo-mlops-api-store-info:latest
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: mydatabase
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
+    ports:
+      - "8504:84"
+    depends_on:
+      - db
+    volumes:
+      - my-data:/work2
+      - my-data:/inference
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      ADMINER_DEFAULT_DRIVER: postgres
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    depends_on:
+      - db
+
+
 volumes:
   my-data:

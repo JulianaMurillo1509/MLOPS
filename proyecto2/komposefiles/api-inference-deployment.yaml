@@ -45,8 +45,13 @@ spec:
           volumeMounts:
             - mountPath: /work2
               name: my-data
+            - mountPath: /inference
+              name: my-data
       restartPolicy: Always
       volumes:
+        - hostPath:
+            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/proyecto2
+          name: my-data
         - hostPath:
             path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/proyecto2
           name: my-data

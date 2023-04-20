@@ -34,14 +34,14 @@ if st.button("Insert data in the database"):
             shows = pd.read_csv(file)
             file.seek(0)
             file_container.write(shows)
-            response = requests.post("http://api-train:82/train_model/uploadfile/", files=files)
+            response = requests.post("http://localhost:8502/train_model/uploadfile/", files=files)
             st.success(response.json())
         else:
             st.warning("Please choose a file to upload.")
 
 st.header("Section to Train Model")
 if st.button("train model"):
-        response = requests.get("http://api-train:82/train_model/train/")
+        response = requests.get("http://localhost:8502/train_model/train/")
         st.success(response.text)
 
 
@@ -77,7 +77,7 @@ with st.form("my_form"):
             "Soil_Type": Soil_Type  
         }
 
-        response = requests.post("http://api-inference:83/do_inference/covertype/", json=data)
+        response = requests.post("http://localhost:8503/do_inference/covertype/", json=data)
 
         if response.ok:
             st.success(response.text)

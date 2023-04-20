@@ -95,7 +95,7 @@ def insert_data(covertype):
     # Print schema of the covertype table
     print("covertype_table:",covertype_table)
     # Create a connection object
-    print("*** example query results:",session.execute(text('SELECT * FROM covertype')))
+    print("*** example query results:",session.execute(text('SELECT * FROM covertype order by id desc limit 10')))
 
     for i, row in covertype.iterrows():
         print("***i:",i)
@@ -116,8 +116,9 @@ def insert_data(covertype):
 
     print("***session before commit***",session)
     session.commit()
-    print("*** example query results:", session.execute(text('SELECT * FROM covertype')))
+    # print("*** example query results:", session.execute(text('SELECT * FROM covertype')))
     session.close()
+
 
 
 def clean_data(df):
@@ -211,5 +212,30 @@ async def train_model(data:str='covertype'):
     return accuracy
 
 
+@app.get("/train_from_csv")
+def csv_to_df():
+    # Path to the directory containing the CSV files
+    csv_dir = "/inference"
+
+    # Get a list of all CSV files in the directory
+    csv_files = [f for f in os.listdir(csv_dir) if f.endswith(".csv")]
+
+    # Create an empty list to hold the dataframes
+    dfs = []
+
+    # Loop through each CSV file
+    for csv_file in csv_files:
+        # Read the CSV file into a Pandas DataFrame
+        df = pd.read_csv(os.path.join(csv_dir, csv_file))
+
+        # Append the DataFrame to the list
+        dfs.append(df)
+
+    # Concatenate all the DataFrames together
+    combined_df = pd.concat(dfs)
+    print("combined_df",combined_df.head())
+    print("insert combined_df",insert_data(combined_df))
+
+    return combined_df
 
 

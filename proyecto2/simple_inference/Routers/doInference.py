@@ -52,7 +52,7 @@ def connect_database():
     print("DB_PORT", DB_PORT)
     # Connect to the database
     print('DB_PASSWORD',DB_PASSWORD)
-    engine = create_engine('postgresql://myuser:mypassword@DB_HOST:DB_PORT/mydatabase')
+    engine = create_engine('postgresql://myuser:'+DB_PASSWORD+'@'+DB_HOST+':'+DB_PORT+'/mydatabase')
     Session = sessionmaker(bind=engine)
     session = Session()
     print("session",session)
@@ -61,63 +61,69 @@ def connect_database():
 
 
 def insert_data(covertype):
-    print('***insert_data***')
-    # Connect to the database
-    session, engine = connect_database()
-    print("***df covertype***", covertype.info())
-    # Define the table schema
-    Base = declarative_base()
-    # Define covertype table model
-    class Covertype(Base):
-        __tablename__ = 'covertype'
-        id = Column(Integer, primary_key=True, index=True)
-        Elevation= Column(Integer)
-        Aspect = Column(Integer)
-        Slope = Column(Integer)
-        Horizontal_Distance_To_Hydrology = Column(Integer)
-        Vertical_Distance_To_Hydrology = Column(Integer)
-        Horizontal_Distance_To_Roadways = Column(Integer)
-        Hillshade_9am = Column(Integer)
-        Hillshade_Noon = Column(Integer)
-        Hillshade_3pm=Column(Integer)
-        Horizontal_Distance_To_Fire_Points = Column(Integer)
-        Wilderness_Area=Column(String)
-        Soil_Type = Column(String)
-        Cover_Type = Column(Integer)
+    try:
+        print('***insert_data inference***')
+        # Connect to the database
+        session, engine = connect_database()
+        print("***df covertype inference***", covertype.info())
+        # Define the table schema
+        Base = declarative_base()
+        # Define covertype table model
+        class Covertype(Base):
+            __tablename__ = 'covertype_inference'
+            id = Column(Integer, primary_key=True, index=True)
+            Elevation= Column(Integer)
+            Aspect = Column(Integer)
+            Slope = Column(Integer)
+            Horizontal_Distance_To_Hydrology = Column(Integer)
+            Vertical_Distance_To_Hydrology = Column(Integer)
+            Horizontal_Distance_To_Roadways = Column(Integer)
+            Hillshade_9am = Column(Integer)
+            Hillshade_Noon = Column(Integer)
+            Hillshade_3pm=Column(Integer)
+            Horizontal_Distance_To_Fire_Points = Column(Integer)
+            Wilderness_Area=Column(String)
+            Soil_Type = Column(String)
+            Cover_Type = Column(Integer)
 
-    print('Base',Base)
-    # Create table if it doesn't exist
-    Base.metadata.create_all(bind=engine)
-    # Insert the data into the table
-    print('Insert the data into the table')
-    covertype_table = Table('covertype',Base.metadata, autoload=True)
-    # Print schema of the covertype table
-    print("covertype_table:",covertype_table)
-    # Create a connection object
-    print("*** example query results:",session.execute(text('SELECT * FROM covertype')))
+        print('Base',Base)
+        # Create table if it doesn't exist
+        Base.metadata.create_all(bind=engine)
+        # Insert the data into the table
+        print('Insert the data into the table')
+        covertype_table = Table('covertype_inference',Base.metadata, autoload=True)
+        # Print schema of the covertype table
+        print("covertype_inference:",covertype_table)
+        # Create a connection object
+        print("*** example query results:",session.execute(text('SELECT * FROM covertype_inference order by id desc limit 10')))
 
-    for i, row in covertype.iterrows():
-        print("***i:",i)
-        covertype = Covertype(    Elevation= row['Elevation'],
-                                Aspect = row['Aspect'],
-                                Slope = row['Slope'],
-                                Horizontal_Distance_To_Hydrology = row['Horizontal_Distance_To_Hydrology'],
-                                Vertical_Distance_To_Hydrology = row['Vertical_Distance_To_Hydrology'],
-                                Horizontal_Distance_To_Roadways = row['Horizontal_Distance_To_Roadways'],
-                                Hillshade_9am = row['Hillshade_9am'],
-                                Hillshade_Noon = row['Hillshade_Noon'],
-                                Hillshade_3pm=row['Hillshade_3pm'],
-                                Horizontal_Distance_To_Fire_Points = row['Horizontal_Distance_To_Fire_Points'],
-                                Wilderness_Area= row['Wilderness_Area'],
-                                Soil_Type = row['Soil_Type'],
-                                Cover_Type = row['Cover_Type'])
-        session.add(covertype)
+        for i, row in covertype.iterrows():
+            print("***i:",i)
+            print("***row:", row)
+            covertype = Covertype( Elevation= row['Elevation'],
+                                    Aspect = row['Aspect'],
+                                    Slope = row['Slope'],
+                                    Horizontal_Distance_To_Hydrology = row['Horizontal_Distance_To_Hydrology'],
+                                    Vertical_Distance_To_Hydrology = row['Vertical_Distance_To_Hydrology'],
+                                    Horizontal_Distance_To_Roadways = row['Horizontal_Distance_To_Roadways'],
+                                    Hillshade_9am = row['Hillshade_9am'],
+                                    Hillshade_Noon = row['Hillshade_Noon'],
+                                    Hillshade_3pm=row['Hillshade_3pm'],
+                                    Horizontal_Distance_To_Fire_Points = row['Horizontal_Distance_To_Fire_Points'],
+                                    Wilderness_Area= row['Wilderness_Area'],
+                                    Soil_Type = row['Soil_Type'],
+                                    Cover_Type = row['Cover_Type'])
+            session.add(covertype)
 
-    print("***session before commit***",session)
-    session.commit()
-    print("*** example query results:", session.execute(text('SELECT * FROM covertype')))
-    session.close()
-
+        print("***session before commit***",session)
+        session.commit()
+        print("*** example query results:", session.execute(text('SELECT * FROM covertype_inference order by id desc limit 1')))
+        session.close()
+        result="insert OK"
+    except Exception as e:
+        print("ERROR:",e)
+        result=e
+    return result
 
 @router.post("/covertype")
 async def test_model(covertype: Covertype, model:str='covertype'):
@@ -126,10 +132,18 @@ async def test_model(covertype: Covertype, model:str='covertype'):
     if not os.path.isfile(path+model+'_model.joblib'):
         raise HTTPException(status_code=500, detail="Unkown model: "+ model+" Try to train model first.")
     print("loadign mdoel from:",path+model+'_model.joblib')
- 
+    print("covertype",covertype)
+    print("covertype",type(covertype))
+
     preparedData = prepare_sample(covertype)
+    df_original_data = pd.DataFrame(dict(covertype), index=[0])
+    print("df_original_data", df_original_data)
+    print("df_original_data", type(df_original_data))
     model_loaded = load(path+model+'_model.joblib')
     covertypes = model_loaded.predict(preparedData)
+    df_original_data['Cover_Type'] = covertypes
+    print("df before insert>>>>>",df_original_data)
+    print("insert_data>>>>>",insert_data(df_original_data))
     return 'cover type is: ' + str(int(covertypes))
 
 

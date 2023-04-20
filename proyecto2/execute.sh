@@ -1,4 +1,8 @@
 #!/bin/bash
+
+echo "delete everything in microk8s ..."
+microk8s kubectl delete --all daemonsets,replicasets,services,deployments,pods,rc,ingress --namespace=default
+
 # Build the Docker Compose project
 echo "Building the Docker Compose project..."
 # kill kubectl services
@@ -7,29 +11,51 @@ echo "Building the Docker Compose project..."
 pkill -f api-train
 pkill -f api-inference
 pkill -f frontend
+pkill -f adminer
+pkill -f api-store-info
+
 ps aux | grep api-train
 ps aux | grep api-inference
 ps aux | grep frontend
+ps aux | grep adminer
+ps aux | grep api-store-info
 
-docker rmi leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-api-frontend:latest
-docker-compose build
-docker image inspect leodocker2021/my-repo-mlops-api-inference:latest | grep -E 'Id|Created'
-docker image inspect leodocker2021/my-repo-mlops-api-train:latest | grep -E 'Id|Created'
-docker image inspect leodocker2021/my-repo-mlops-api-frontend:latest | grep -E 'Id|Created'
-# Tag the built images with the latest tag
-echo "Tagging the built images with the latest tag..."
-docker tag leodocker2021/my-repo-mlops-api-inference:latest   leodocker2021/my-repo-mlops-api-inference:latest
-docker tag leodocker2021/my-repo-mlops-api-train:latest   leodocker2021/my-repo-mlops-api-train:latest
-docker tag leodocker2021/my-repo-mlops-api-frontend:latest   leodocker2021/my-repo-mlops-api-frontend:latest
+docker rmi leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-api-frontend:latest leodocker2021/my-repo-mlops-api-store-info:latest
 
-# Push the latest tagged image to Docker Hub
-echo "Pushing the latest tagged image to Docker Hub..."
-docker push leodocker2021/my-repo-mlops-api-inference:latest
-docker push leodocker2021/my-repo-mlops-api-train:latest
-docker push leodocker2021/my-repo-mlops-api-frontend:latest
 
-echo "Checking if MicroK8s cluster is running..."
-sleep 60s
+# Define an array of service names
+services=( "frontend" "api-train" "api-inference" "api-store-info")
+
+# Check if at least one argument is passed
+if [ "$#" -eq 0 ]; then
+  echo "No service name provided. Deploying all services..."
+else
+  # Only deploy the specified service(s)
+  services=( "$@" )
+fi
+
+# Define an array of corresponding Docker image names
+images=( "api-frontend" "api-train" "api-inference" "api-store-info")
+
+# Loop through the service names and corresponding image names
+for (( i=0; i<${#services[@]}; i++ )); do
+  service="${services[$i]}"
+  image="${images[$i]}"
+  echo "$image"
+  echo "Building Docker image for $service..."
+  docker-compose build "$service"
+
+  echo "Tagging the built image with the latest tag..."
+  docker tag "leodocker2021/my-repo-mlops-$service:latest" "leodocker2021/my-repo-mlops-$service:latest"
+
+  echo "Pushing the tagged image to Docker Hub..."
+  docker push "leodocker2021/my-repo-mlops-$service:latest"
+
+  echo "Checking if MicroK8s cluster is running..."
+  sleep 60s
+
+done
+
 if microk8s status | grep -q "microk8s is running"; then
     echo "MicroK8s is running"
     echo "Checking if MicroK8s kubectl get nodes are ready.."
@@ -41,6 +67,8 @@ if microk8s status | grep -q "microk8s is running"; then
     # Apply the Kubernetes manifests to MicroK8s
     echo "Applying the Kubernetes manifests to MicroK8s..."
     microk8s kubectl apply -f komposefiles/
+    echo "Applying the Kubernetes manifest to MicroK8s..."
+    #microk8s kubectl apply -f komposefiles/"$service".yaml
     sleep 30s
     while true; do
       # Get the status of all pods
@@ -50,7 +78,7 @@ if microk8s status | grep -q "microk8s is running"; then
       running=$(echo "$status" | grep -c "Running")
 
       # Check if all 4 pods are in the "Running" state
-      if [ "$running" -eq 4 ]; then
+      if [ "$running" -eq 6 ]; then
           echo "All pods are running"
           break
       else
@@ -61,10 +89,21 @@ if microk8s status | grep -q "microk8s is running"; then
     echo "executing k8_start.."
     source k8_start.sh
     exit 1
-else
-    echo "MicroK8s is not running"
-    exit 1
+  else
+      echo "MicroK8s is not running"
+      exit 1
 fi
+
+
+# docker-compose build
+docker image inspect leodocker2021/my-repo-mlops-api-inference:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-api-train:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-api-frontend:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-api-store-info:latest | grep -E 'Id|Created'
+
+
+
+
 
 
 
