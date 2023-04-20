@@ -8,6 +8,7 @@ services:
     image: leodocker2021/my-repo-mlops-frontend:latest
     environment:
       HOST: 10.43.102.111
+      #HOST: 192.168.3.6
       #HOST: ${HOST:-$(hostname -I | awk '{print $1}')}
     ports:
       - 8501:8501
