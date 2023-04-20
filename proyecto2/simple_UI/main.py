@@ -42,7 +42,7 @@ if st.button("Insert data in the database"):
 st.header("Section to Train Model")
 if st.button("train model"):
         response = requests.get("http://api-train:82/train_model/train/")
-        st.success(response)
+        st.success(response.text)
 
 
 st.header("Section to do Inference")
@@ -80,6 +80,6 @@ with st.form("my_form"):
         response = requests.post("http://api-inference:83/do_inference/covertype/", json=data)
 
         if response.ok:
-            st.success(response.content)
+            st.success(response.text)
         else:
             st.error("failed to do inference")
