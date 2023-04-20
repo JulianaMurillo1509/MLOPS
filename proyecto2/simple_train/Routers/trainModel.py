@@ -17,6 +17,9 @@ from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
 DB_PASSWORD=os.environ['DB_PASSWORD']
+DB_HOST=os.environ['DB_HOST']
+DB_PORT=os.environ['DB_PORT']
+
 
 app = FastAPI()
 router = APIRouter(
@@ -26,9 +29,11 @@ router = APIRouter(
 
 def connect_database():
     print('***connect_database***')
+    print("DB_HOST", DB_HOST)
+    print("DB_PORT", DB_PORT)
     # Connect to the database
     print('DB_PASSWORD',DB_PASSWORD)
-    engine = create_engine('postgresql://myuser:mypassword@db/mydatabase')
+    engine = create_engine('postgresql://myuser:'+DB_PASSWORD+'@'+DB_HOST+':'+DB_PORT+'/mydatabase')
     Session = sessionmaker(bind=engine)
     session = Session()
     print("session",session)
@@ -148,6 +153,17 @@ def read_data(data):
 @app.get("/")
 async def root():
     return {"message": "Hello  training covertype"}
+
+@router.post("/insertdataFromUrl")
+async def get_data(data:str='penguins'):
+    try:
+        print("get_data:",data)
+        get_data(data)
+    except Exception as e:
+        print("ERROR",e)
+        return e
+    return ("data inserted from url OK")
+
 
 @router.post("/uploadfile/")
 async def create_upload_file(file: UploadFile = File(...)):

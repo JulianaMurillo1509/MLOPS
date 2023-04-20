@@ -13,6 +13,7 @@ services:
       - api-inference
     volumes:
         - my-data:/work0
+
   api-train:
     build:
       context: .
@@ -45,6 +46,12 @@ services:
       context: .
       dockerfile: simple_inference/Dockerfile
     image: leodocker2021/my-repo-mlops-api-inference:latest
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: mydatabase
+      DB_USER: myuser
+      DB_PASSWORD: mypassword
     ports:
       - "8503:83"
     depends_on:

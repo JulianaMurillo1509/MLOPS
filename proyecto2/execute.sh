@@ -11,9 +11,11 @@ ps aux | grep api-train
 ps aux | grep api-inference
 ps aux | grep frontend
 
-
+docker rmi leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-api-frontend:latest
 docker-compose build
-
+docker image inspect leodocker2021/my-repo-mlops-api-inference:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-api-train:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-api-frontend:latest | grep -E 'Id|Created'
 # Tag the built images with the latest tag
 echo "Tagging the built images with the latest tag..."
 docker tag leodocker2021/my-repo-mlops-api-inference:latest   leodocker2021/my-repo-mlops-api-inference:latest
@@ -25,36 +27,45 @@ echo "Pushing the latest tagged image to Docker Hub..."
 docker push leodocker2021/my-repo-mlops-api-inference:latest
 docker push leodocker2021/my-repo-mlops-api-train:latest
 docker push leodocker2021/my-repo-mlops-api-frontend:latest
-# Convert the Docker Compose file to Kubernetes manifests
-echo "Converting the Docker Compose file to Kubernetes manifests..."
-kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
-
-# Apply the Kubernetes manifests to MicroK8s
-echo "Applying the Kubernetes manifests to MicroK8s..."
-microk8s kubectl apply -f komposefiles/
 
 echo "Checking if MicroK8s cluster is running..."
-
-# Check if MicroK8s is running#
-#if ! microk8s status --wait-ready --timeout 30s > /dev/null 2>&1; then
-#  echo "MicroK8s is not running or failed to start within the timeout period of 60 seconds."
-#  exit 1
-#fi
 sleep 60s
+if microk8s status | grep -q "microk8s is running"; then
+    echo "MicroK8s is running"
+    echo "Checking if MicroK8s kubectl get nodes are ready.."
+    # Check if Kubernetes API server is ready
+    sleep 10s
+    # execute compose to generate yaml
+    chmod u+w komposefiles/
+    kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
+    # Apply the Kubernetes manifests to MicroK8s
+    echo "Applying the Kubernetes manifests to MicroK8s..."
+    microk8s kubectl apply -f komposefiles/
+    sleep 30s
+    while true; do
+      # Get the status of all pods
+      status=$(microk8s kubectl get pods)
 
-echo "Checking if MicroK8s kubectl get nodes are ready.."
-# Check if Kubernetes API server is ready
-if ! microk8s kubectl get nodes > /dev/null 2>&1; then
-  echo "Kubernetes API server is not ready."
-  exit 1
+      # Count the number of pods in the "Running" state
+      running=$(echo "$status" | grep -c "Running")
+
+      # Check if all 4 pods are in the "Running" state
+      if [ "$running" -eq 4 ]; then
+          echo "All pods are running"
+          break
+      else
+          echo "Waiting for all pods to start"
+          sleep 30
+      fi
+    done
+    echo "executing k8_start.."
+    source k8_start.sh
+    exit 1
+else
+    echo "MicroK8s is not running"
+    exit 1
 fi
 
-sleep 30s
 
-echo "MicroK8s cluster is running. Forwarding traffic from the services to your local machine..."
-microk8s kubectl port-forward --address 0.0.0.0 service/api-train 8502:8502 &
-microk8s kubectl port-forward --address 0.0.0.0 service/api-inference 8503:8503 &
-microk8s kubectl port-forward --address 0.0.0.0 service/frontend 8501:8501 &
-# echo "MicroK8s cluster is running. Forwarding traffic from the services to your local machine..."
-# microk8s kubectl port-forward --address 0.0.0.0 service/api-train 8502:8502 &
-# microk8s kubectl port-forward --address 0.0.0.0 service/api-inference 8503:8503 &
+
+
