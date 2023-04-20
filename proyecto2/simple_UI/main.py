@@ -94,5 +94,5 @@ if st.button("Save Info"):
         if response.ok:
                 st.success(response.text)
         else:
-                st.error("failed to do inference")
+                st.error("failed to do store data")
                 st.success(response.text)

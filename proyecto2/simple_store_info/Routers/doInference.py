@@ -23,7 +23,7 @@ router = APIRouter(
     tags= ['store info in csv']
 )
 
-@app.get("/")
+@router.get("/")
 async def root():
     return {"message": "Hello World inference"}
 
@@ -42,7 +42,7 @@ def connect_database():
     return session,engine
 
 
-@app.get("/convert_inference_csv")
+@router.get("/convert_inference_csv")
 async def read_data():
     # Connect to the PostgreSQL database
     session,engine=connect_database()
