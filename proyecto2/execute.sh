@@ -20,7 +20,7 @@ ps aux | grep frontend
 ps aux | grep adminer
 ps aux | grep api-store-info
 
-docker rmi leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-api-frontend:latest leodocker2021/my-repo-mlops-api-store-info:latest
+docker rmi leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-frontend:latest leodocker2021/my-repo-mlops-api-store-info:latest
 
 
 # Define an array of service names
@@ -35,7 +35,7 @@ else
 fi
 
 # Define an array of corresponding Docker image names
-images=( "api-frontend" "api-train" "api-inference" "api-store-info")
+images=( "frontend" "api-train" "api-inference" "api-store-info")
 
 # Loop through the service names and corresponding image names
 for (( i=0; i<${#services[@]}; i++ )); do
@@ -98,7 +98,7 @@ fi
 # docker-compose build
 docker image inspect leodocker2021/my-repo-mlops-api-inference:latest | grep -E 'Id|Created'
 docker image inspect leodocker2021/my-repo-mlops-api-train:latest | grep -E 'Id|Created'
-docker image inspect leodocker2021/my-repo-mlops-api-frontend:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-frontend:latest | grep -E 'Id|Created'
 docker image inspect leodocker2021/my-repo-mlops-api-store-info:latest | grep -E 'Id|Created'
 
 

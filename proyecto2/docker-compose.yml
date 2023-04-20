@@ -5,7 +5,10 @@ services:
     build: 
       context: .
       dockerfile: simple_UI/Dockerfile
-    image: leodocker2021/my-repo-mlops-api-frontend:latest
+    image: leodocker2021/my-repo-mlops-frontend:latest
+    environment:
+      HOST: 192.168.3.6
+      # HOST: ${HOST:-$(hostname -I | awk '{print $1}')}
     ports:
       - 8501:8501
     depends_on:
@@ -29,7 +32,7 @@ services:
       DB_PASSWORD: mypassword
     volumes:
       - my-data:/work1
-      - my-data:/inference
+      - my-data-inference:/inference
     ports:
       - "8502:82"
     depends_on:
@@ -61,7 +64,7 @@ services:
       - db
     volumes:
       - my-data:/work2
-      - my-data:/inference
+      - my-data-inference:/inference
 
   api-store-info:
     build:
@@ -80,7 +83,7 @@ services:
       - db
     volumes:
       - my-data:/work2
-      - my-data:/inference
+      - my-data-inference:/inference
 
   adminer:
     image: adminer
@@ -98,3 +101,4 @@ services:
 
 volumes:
   my-data:
+  my-data-inference:

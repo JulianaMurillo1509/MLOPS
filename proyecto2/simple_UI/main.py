@@ -2,7 +2,10 @@ import requests
 import streamlit as st
 import pandas as pd
 import time
+import sys
+import os
 
+HOST=os.environ['HOST']
 
 WILDERNESS = {"Cache": "Cache", "Commanche": "Commanche", "Rawah": "Rawah","Neota": "Neota",}
 SOIL_TYPE= {"C2702":"C2702","C2703":"C2703","C2704":"C2704","C2705":"C2705","C2706":"C2706",
@@ -34,14 +37,14 @@ if st.button("Insert data in the database"):
             shows = pd.read_csv(file)
             file.seek(0)
             file_container.write(shows)
-            response = requests.post("http://localhost:8502/train_model/uploadfile/", files=files)
+            response = requests.post("http://"+HOST+":8502/train_model/uploadfile/", files=files)
             st.success(response.json())
         else:
             st.warning("Please choose a file to upload.")
 
 st.header("Section to Train Model")
 if st.button("train model"):
-        response = requests.get("http://localhost:8502/train_model/train/")
+        response = requests.get("http://"+HOST+":8502/train_model/train/")
         st.success(response.text)
 
 
@@ -77,9 +80,19 @@ with st.form("my_form"):
             "Soil_Type": Soil_Type  
         }
 
-        response = requests.post("http://localhost:8503/do_inference/covertype/", json=data)
+        response = requests.post("http://"+HOST+":8503/do_inference/covertype/", json=data)
 
         if response.ok:
             st.success(response.text)
         else:
             st.error("failed to do inference")
+
+st.header("Section to Save Info")
+if st.button("Save Info"):
+        response = requests.get("http://"+HOST+":8504/convert_inference_csv/")
+
+if response.ok:
+        st.success(response.text)
+else:
+        st.error("failed to do inference")
+        st.success(response.text)
