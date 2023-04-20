@@ -89,10 +89,10 @@ with st.form("my_form"):
 
 st.header("Section to Save Info")
 if st.button("Save Info"):
-        response = requests.get("http://"+HOST+":8504/convert_inference_csv/")
+        response = requests.get("http://"+HOST+":8504/store/convert_inference_csv/")
 
-if response.ok:
-        st.success(response.text)
-else:
-        st.error("failed to do inference")
-        st.success(response.text)
+        if response.ok:
+                st.success(response.text)
+        else:
+                st.error("failed to do inference")
+                st.success(response.text)

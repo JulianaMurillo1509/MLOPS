@@ -13,7 +13,6 @@ from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.ext.declarative import declarative_base
 
 
-
 DB_PASSWORD=os.environ['DB_PASSWORD']
 DB_HOST=os.environ['DB_HOST']
 DB_PORT=os.environ['DB_PORT']
