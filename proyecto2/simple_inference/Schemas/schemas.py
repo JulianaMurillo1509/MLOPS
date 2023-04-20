@@ -1,11 +1,17 @@
 from pydantic import BaseModel
 
-class Penguin(BaseModel):
-    island : str ="Torgersen"
-    bill_length_mm : float = 39.1
-    bill_depth_mm : float = 18.7
-    flipper_length_mm : float = 181
-    body_mass_g : float = 3750
-    sex : str ="male"
-    year :  int = 2007
+class Covertype(BaseModel):
+    Elevation: int =  2991
+    Aspect	: int = 119
+    Slope	: int = 7
+    Horizontal_Distance_To_Hydrology	: int = 67
+    Vertical_Distance_To_Hydrology	: int = 11
+    Horizontal_Distance_To_Roadways	: int = 1015
+    Hillshade_9am	: int = 233
+    Hillshade_Noon	: int = 234
+    Hillshade_3pm	: int = 133
+    Horizontal_Distance_To_Fire_Points	: int = 1570
+    Wilderness_Area	: str = "Commanche"
+    Soil_Type: str = "C7202"
 
+	

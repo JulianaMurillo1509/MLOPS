@@ -5,6 +5,9 @@ from joblib import dump
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 import numpy as np
 import pandas as pd
 
@@ -42,7 +45,7 @@ def delete_data():
      try:
         # Get the table object
         metadata = MetaData()
-        table = Table('penguins', metadata, autoload_with=engine)
+        table = Table('covertype', metadata, autoload_with=engine)
         # Drop the table
         table.drop(bind=conn)
      except NoSuchTableError as  e:
@@ -53,52 +56,62 @@ def delete_data():
     return "data deletion successful"
 
 
-def insert_data(penguins):
+def insert_data(covertype):
     print('***insert_data***')
     # Connect to the database
     session, engine = connect_database()
-    print("***df penguins***", penguins.info())
+    print("***df covertype***", covertype.info())
     # Define the table schema
     Base = declarative_base()
-    # Define penguins table model
-    class Penguin(Base):
-        __tablename__ = 'penguins'
+    # Define covertype table model
+    class Covertype(Base):
+        __tablename__ = 'covertype'
         id = Column(Integer, primary_key=True, index=True)
-        species = Column(String)
-        island = Column(String)
-        bill_length_mm=Column(Float)
-        bill_depth_mm = Column(Float)
-        flipper_length_mm=Column(Float)
-        body_mass_g = Column(Float)
-        sex = Column(String)
-        year = Column(Integer)
+        Elevation= Column(Integer)
+        Aspect = Column(Integer)
+        Slope = Column(Integer)
+        Horizontal_Distance_To_Hydrology = Column(Integer)
+        Vertical_Distance_To_Hydrology = Column(Integer)
+        Horizontal_Distance_To_Roadways = Column(Integer)
+        Hillshade_9am = Column(Integer)
+        Hillshade_Noon = Column(Integer)
+        Hillshade_3pm=Column(Integer)
+        Horizontal_Distance_To_Fire_Points = Column(Integer)
+        Wilderness_Area=Column(String)
+        Soil_Type = Column(String)
+        Cover_Type = Column(Integer)
 
     print('Base',Base)
     # Create table if it doesn't exist
     Base.metadata.create_all(bind=engine)
     # Insert the data into the table
     print('Insert the data into the table')
-    penguins_table = Table('penguins',Base.metadata, autoload=True)
-    # Print schema of the penguins table
-    print("penguins_table:",penguins_table)
+    covertype_table = Table('covertype',Base.metadata, autoload=True)
+    # Print schema of the covertype table
+    print("covertype_table:",covertype_table)
     # Create a connection object
-    print("*** example query results:",session.execute(text('SELECT * FROM penguins')))
+    print("*** example query results:",session.execute(text('SELECT * FROM covertype')))
 
-    for i, row in penguins.iterrows():
+    for i, row in covertype.iterrows():
         print("***i:",i)
-        #species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year
-        penguin = Penguin(species=row['species'],
-                          island=row['island'],
-                          bill_length_mm=row['bill_length_mm'],
-                          bill_depth_mm=row['bill_depth_mm'],
-                          flipper_length_mm=row['flipper_length_mm'],
-                          body_mass_g=row['body_mass_g'],
-                          sex = row['sex'],
-                          year = row['year'])
-        session.add(penguin)
+        covertype = Covertype(    Elevation= row['Elevation'],
+                                Aspect = row['Aspect'],
+                                Slope = row['Slope'],
+                                Horizontal_Distance_To_Hydrology = row['Horizontal_Distance_To_Hydrology'],
+                                Vertical_Distance_To_Hydrology = row['Vertical_Distance_To_Hydrology'],
+                                Horizontal_Distance_To_Roadways = row['Horizontal_Distance_To_Roadways'],
+                                Hillshade_9am = row['Hillshade_9am'],
+                                Hillshade_Noon = row['Hillshade_Noon'],
+                                Hillshade_3pm=row['Hillshade_3pm'],
+                                Horizontal_Distance_To_Fire_Points = row['Horizontal_Distance_To_Fire_Points'],
+                                Wilderness_Area= row['Wilderness_Area'],
+                                Soil_Type = row['Soil_Type'],
+                                Cover_Type = row['Cover_Type'])
+        session.add(covertype)
+
     print("***session before commit***",session)
     session.commit()
-    print("*** example query results:", session.execute(text('SELECT * FROM penguins')))
+    print("*** example query results:", session.execute(text('SELECT * FROM covertype')))
     session.close()
 
 
@@ -117,82 +130,69 @@ def clean_data(df):
     df[colums] = imputer.transform(df[colums])
     return df
 
-def get_data(data):
-    print('***get_data***')
-    if data=='penguins':
-        penguins = pd.read_csv(
-            'https://raw.githubusercontent.com/allisonhorst/palmerpenguins/main/inst/extdata/penguins.csv')
-        #species,island,bill_length_mm,bill_depth_mm,flipper_length_mm,body_mass_g,sex,year
-        penguins=clean_data(penguins) #clean data
-        print('penguins',penguins.head())
-        insert_data(penguins)
-        print("finish insert")
-    else:
-        raise HTTPException(status_code=500, detail="Unkown dataset: "+ data)
-
-
 def read_data(data):
     print('***read_data***',data)
     session, engine = connect_database()
     print('***session***',session)
-    # Execute a SELECT query on the penguins table
-    query = text("SELECT * FROM penguins")
+    # Execute a SELECT query on the covertype table
+    query = text("SELECT * FROM covertype")
     result = session.execute(query)
     # Create a pandas DataFrame from the query result
-    penguins = pd.DataFrame(result.fetchall(), columns=result.keys())
-    print('***penguins data:***', penguins.head())
-    print(penguins)
+    covertype = pd.DataFrame(result.fetchall(), columns=result.keys())
+    print('***covertype data:***', covertype.head())
+    print(covertype)
     session.close()
-    return  penguins
+    return  covertype
 
 
 @app.get("/")
 async def root():
-    return {"message": "Hello  training penguins"}
+    return {"message": "Hello  training covertype"}
 
 @router.post("/uploadfile/")
 async def create_upload_file(file: UploadFile = File(...)):
         csv = pd.read_csv(file.file)
-        penguins=clean_data(csv) #clean data
-        insert_data(penguins)
+        insert_data(csv)
         return("finish insert succesfully")
 
 
 @router.get("/train")
-async def train_model(data:str='penguins'):
+async def train_model(data:str='covertype'):
     print("***train_model***")
     df = read_data(data) #read data from data base
     print('***df:***',df.head())
 
     #cast pandas object to a specified dtype
-    df["species"] = df["species"].astype('category')
-    df["island"] = df["island"].astype('category')
-    df["sex"] = df["sex"].astype('category')
+    df["Wilderness_Area"] = df["Wilderness_Area"].astype('category')
+    df["Soil_Type"] = df["Soil_Type"].astype('category')
 
     #. Return Series of codes as well as the index
-    df["island"] = df["island"].cat.codes
-    df["sex"] = df["sex"].cat.codes
+    df["Wilderness_Area"] = df["Wilderness_Area"].cat.codes
+    df["Soil_Type"] = df["Soil_Type"].cat.codes
 
     df = df.drop(['id'],axis = 1)
+
+    X = df.drop('Cover_Type', axis=1)
+    y = df['Cover_Type']
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
     
-    #Training
-    X = df.drop(['species'], axis=1)
-    y = df['species']
-    spicies = {'Adelie': 0, 'Chinstrap': 1, 'Gentoo': 2}
-    y = [spicies[item] for item in y]
-    y = np.array(y) 
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=33)
 
-    model = DecisionTreeClassifier(max_depth=5)
-    model.fit(X_train, y_train)
-    expected_y  = y_test
-    predicted_y = model.predict(X_test)
-    model_metrics = metrics.classification_report(expected_y, predicted_y, output_dict=True,zero_division=1)
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train_scaled, y_train)
+
+    y_pred = model.predict(X_test_scaled)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Accuracy: {accuracy:.2f}")
     path="/work1/"
     dump(model, path+data+'_model.joblib')
     print("model trained and safe in :",path+data+'_model.joblib')
-    return model_metrics
+    return accuracy
 
 
 
