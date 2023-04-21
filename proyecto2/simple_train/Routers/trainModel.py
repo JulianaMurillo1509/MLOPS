@@ -214,8 +214,8 @@ async def train_model(data:str='covertype'):
     return accuracy
 
 
-@app.get("/train_from_csv")
-def csv_to_df():
+@router.get("/train_from_csv")
+async def csv_to_df(data:str='covertype'):
     # Path to the directory containing the CSV files
     csv_dir = "/inference"
 
@@ -227,6 +227,7 @@ def csv_to_df():
 
     # Loop through each CSV file
     for csv_file in csv_files:
+        print("csv_file",csv_file)
         # Read the CSV file into a Pandas DataFrame
         df = pd.read_csv(os.path.join(csv_dir, csv_file))
 
