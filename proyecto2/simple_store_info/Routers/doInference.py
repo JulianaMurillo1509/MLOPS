@@ -69,7 +69,7 @@ async def read_data():
         # Create the CSV file
         current_date_time = datetime.datetime.now()
         date_str = current_date_time.strftime("%Y-%m-%d")
-        hour_str = current_date_time.strftime("%H")
+        hour_str = current_date_time.strftime("%H-%M-%S")
         date_hour_str = date_str + "_" + hour_str
         csv_file = 'covertype_inference'+date_hour_str+'.csv'
         df.to_csv(csv_file, index=False)
@@ -85,10 +85,6 @@ async def read_data():
     except NoSuchTableError as e:
         raise HTTPException(status_code=500, detail='table does not exist or error reading data!')
 
-
-
-
-
-    return {'message': 'Data loaded successfully and CSV written to shared volume'}
+    return {'message': 'Data loaded successfully and CSV written to shared volume'+csv_file}
 
 

@@ -215,13 +215,14 @@ async def train_model(data:str='covertype'):
 
 
 @router.get("/train_from_csv")
-async def csv_to_df(data:str='covertype'):
+async def train_from_csv(data:str='covertype'):
+    print("csv_to_df",data)
     # Path to the directory containing the CSV files
-    csv_dir = "/inference"
+    csv_dir = "/inference/"
 
     # Get a list of all CSV files in the directory
     csv_files = [f for f in os.listdir(csv_dir) if f.endswith(".csv")]
-
+    print("csv_files", csv_files)
     # Create an empty list to hold the dataframes
     dfs = []
 
@@ -230,15 +231,15 @@ async def csv_to_df(data:str='covertype'):
         print("csv_file",csv_file)
         # Read the CSV file into a Pandas DataFrame
         df = pd.read_csv(os.path.join(csv_dir, csv_file))
-
+        df.drop('id', axis=1, inplace=True)
         # Append the DataFrame to the list
         dfs.append(df)
-
+    print("dfs", dfs)
     # Concatenate all the DataFrames together
     combined_df = pd.concat(dfs)
-    print("combined_df",combined_df.head())
+    print("combined_df",combined_df)
     print("insert combined_df",insert_data(combined_df))
-
-    return combined_df
+    r=train_model(data)
+    return r
 
 
