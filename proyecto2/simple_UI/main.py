@@ -96,6 +96,8 @@ if st.button("Save Info"):
         else:
                 st.error("failed to do inference")
                 st.success(response.text)
+
+st.header("Section to Save Info")
 if st.button("train with new data from csv"):
         response = requests.get("http://"+HOST+":8502/train_model/train_from_csv/")
 
