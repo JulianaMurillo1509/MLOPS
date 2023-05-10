@@ -86,7 +86,7 @@ if microk8s status | grep -q "microk8s is running"; then
       running=$(echo "$status" | grep -c "Running")
 
       # Check if all 4 pods are in the "Running" state
-      if [ "$running" -gt 6 ]; then
+      if [ "$running" -gt 5 ]; then
           echo "All pods are running"
           break
       else
