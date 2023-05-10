@@ -11,7 +11,7 @@ services:
       #HOST: 192.168.3.6
       #HOST: ${HOST:-$(hostname -I | awk '{print $1}')}
     ports:
-      - 8501:81
+      - "8501:81"
     depends_on:
       - api-train
       - api-inference
