@@ -3,9 +3,9 @@
 echo "delete everything in microk8s ..."
 microk8s kubectl delete --all daemonsets,replicasets,services,deployments,pods,rc,ingress --namespace=default
 # restart systemctl
-systemctl daemon-reload
+sudo systemctl daemon-reload
 chmod +x  /home/estudiante/repo/MLOPS/Proyecto3/
-systemctl enable /home/estudiante/repo/MLOPS/Proyecto3/mlflow.service
+sudo systemctl enable /home/estudiante/repo/MLOPS/Proyecto3/mlflow_serv.service
 
 
 # Build the Docker Compose project

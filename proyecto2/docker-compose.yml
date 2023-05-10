@@ -7,8 +7,8 @@ services:
       dockerfile: simple_UI/Dockerfile
     image: leodocker2021/my-repo-mlops-frontend:latest
     environment:
-      HOST: 192.168.64.2
-      #HOST: db
+      HOST: 10.43.102.111
+      #HOST: 192.168.3.6
       #HOST: ${HOST:-$(hostname -I | awk '{print $1}')}
     ports:
       - 8501:8501
@@ -18,7 +18,7 @@ services:
       - api-store-info
       - adminer
     volumes:
-        - my-data:/work2
+        - my-data:/work0
 
   api-train:
     build:
@@ -26,13 +26,13 @@ services:
       dockerfile: simple_train/Dockerfile
     image: leodocker2021/my-repo-mlops-api-train:latest
     environment:
-      DB_HOST: db
+      DB_HOST: 10.43.102.111
       DB_PORT: 5432
       DB_NAME: mydatabase
       DB_USER: myuser
       DB_PASSWORD: mypassword
     volumes:
-      - my-data:/work2
+      - my-data:/work1
       - my-data-inference:/inference
     ports:
       - "8502:82"
@@ -54,7 +54,7 @@ services:
       dockerfile: simple_inference/Dockerfile
     image: leodocker2021/my-repo-mlops-api-inference:latest
     environment:
-      DB_HOST: db
+      DB_HOST: 10.43.102.111
       DB_PORT: 5432
       DB_NAME: mydatabase
       DB_USER: myuser
@@ -73,7 +73,7 @@ services:
       dockerfile: simple_store_info/Dockerfile
     image: leodocker2021/my-repo-mlops-api-store-info:latest
     environment:
-      DB_HOST: db
+      DB_HOST: 10.43.102.111
       DB_PORT: 5432
       DB_NAME: mydatabase
       DB_USER: myuser
@@ -99,18 +99,6 @@ services:
     depends_on:
       - db
 
-  mlflow:
-    image: mlflow
-    command: >
-      mlflow server
-        --backend-store-uri postgresql://myuser:mypassword@db:5432/mydatabase
-        --default-artifact-root s3://mlop-s3/artifacts
-        --host 0.0.0.0
-        --port 5000
-    ports:
-      - "5000:5000"
-    depends_on:
-      - db
 
 volumes:
   my-data:
