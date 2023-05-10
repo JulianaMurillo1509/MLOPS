@@ -9,6 +9,7 @@ RestartSec=30
 Environment=MLFLOW_S3_ENDPOINT_URL=http://10.43.102.111:9000
 Environment=AWS_ACCESS_KEY_ID=admin
 Environment=AWS_SECRET_ACCESS_KEY=supersecret
+ExecStartPre=/bin/bash -c 'PATH=/home/estudiante/.local/bin/:$PATH pip install psycopg2-binary'
 ExecStart=/bin/bash -c 'PATH=/home/estudiante/.local/bin/:$PATH exec mlflow server \
 --backend-store-uri postgresql://myuser:mypassword@10.43.102.111:5432/mydatabase  \
 --default-artifact-root s3://mlop-s3/artifacts \
