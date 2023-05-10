@@ -3,7 +3,7 @@ Description=MLflow tracking server
 After=network.target
 
 [Service]
-User=profesor
+User=estudiante
 Restart=on-failure
 RestartSec=30
 Environment=MLFLOW_S3_ENDPOINT_URL=http://10.43.102.111:9000
