@@ -2,6 +2,11 @@
 
 echo "delete everything in microk8s ..."
 microk8s kubectl delete --all daemonsets,replicasets,services,deployments,pods,rc,ingress --namespace=default
+# restart systemctl
+sudo systemctl daemon-reload
+chmod +x  /home/estudiante/repo/MLOPS/Proyecto3/
+sudo systemctl enable /home/estudiante/repo/MLOPS/Proyecto3/mlflow_serv.service
+
 
 # Build the Docker Compose project
 echo "Building the Docker Compose project..."
@@ -88,6 +93,7 @@ if microk8s status | grep -q "microk8s is running"; then
     done
     echo "executing k8_start.."
     source k8_start.sh
+    sudo systemctl start mlflow_serv.service
     exit 1
   else
       echo "MicroK8s is not running"
