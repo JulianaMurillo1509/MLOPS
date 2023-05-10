@@ -60,7 +60,7 @@ for (( i=0; i<${#services[@]}; i++ )); do
   docker push "leodocker2021/my-repo-mlops-$service:latest"
 
   echo "Checking if MicroK8s cluster is running..."
-  sleep 60s
+  sleep 20s
 
 done
 
@@ -77,7 +77,7 @@ if microk8s status | grep -q "microk8s is running"; then
     microk8s kubectl apply -f komposefiles/
     echo "Applying the Kubernetes manifest to MicroK8s..."
     #microk8s kubectl apply -f komposefiles/"$service".yaml
-    sleep 30s
+    sleep 15s
     while true; do
       # Get the status of all pods
       status=$(microk8s kubectl get pods)
@@ -91,7 +91,7 @@ if microk8s status | grep -q "microk8s is running"; then
           break
       else
           echo "Waiting for all pods to start"
-          sleep 30
+          sleep 15
       fi
     done
     echo "executing k8_start.."

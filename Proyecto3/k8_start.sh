@@ -20,7 +20,7 @@ if ! microk8s kubectl get nodes > /dev/null 2>&1; then
   exit 1
 fi
 
-sleep 30s
+sleep 15s
 
 echo "MicroK8s cluster is running. Forwarding traffic from the services to your local machine..."
 microk8s kubectl port-forward --address 0.0.0.0 service/api-train 8502:8502 &
@@ -29,4 +29,6 @@ microk8s kubectl port-forward --address 0.0.0.0 service/frontend 8501:8501 &
 microk8s kubectl port-forward --address 0.0.0.0 service/adminer 8080:8080 &
 microk8s kubectl port-forward --address 0.0.0.0 service/api-store-info 8504:8504 &
 echo "everything ok..."
+sudo systemctl start mlflow.service
+echo "mlflow service started."
 exit 1

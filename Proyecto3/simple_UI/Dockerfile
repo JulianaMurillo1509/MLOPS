@@ -7,6 +7,6 @@ RUN pip3 install --no-cache-dir --upgrade -r requirements_api.txt
 
 COPY . .
 
-EXPOSE 8501
+EXPOSE 81
 
 CMD ["streamlit", "run", "main.py"]
