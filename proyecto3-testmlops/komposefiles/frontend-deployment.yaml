@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
+    kompose.version: 1.28.0 (c4137012e)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
+        kompose.version: 1.28.0 (c4137012e)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/proyecto3-default: "true"
+        io.kompose.service: frontend
+    spec:
+      containers:
+        - env:
+            - name: HOST
+              value: db
+          image: leodocker2021/my-repo-mlops-frontend:latest
+          name: frontend
+          ports:
+            - containerPort: 8501
+          resources: {}
+          volumeMounts:
+            - mountPath: /work2
+              name: my-data
+      restartPolicy: Always
+      volumes:
+        - hostPath:
+            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/proyecto3
+          name: my-data
+status: {}

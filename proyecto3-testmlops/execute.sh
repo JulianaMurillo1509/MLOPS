@@ -2,12 +2,7 @@
 
 echo "delete everything in microk8s ..."
 microk8s kubectl delete --all daemonsets,replicasets,services,deployments,pods,rc,ingress --namespace=default
-# restart systemctl
-systemctl daemon-reload
-chmod +x  /home/estudiante/repo/MLOPS/Proyecto3/
-systemctl enable /home/estudiante/repo/MLOPS/Proyecto3/mlflow.service
-
-
+docker stop $(docker ps -aq)
 # Build the Docker Compose project
 echo "Building the Docker Compose project..."
 # kill kubectl services
@@ -18,18 +13,21 @@ pkill -f api-inference
 pkill -f frontend
 pkill -f adminer
 pkill -f api-store-info
+pkill -f minio
+pkill -f mlflow
 
 ps aux | grep api-train
 ps aux | grep api-inference
 ps aux | grep frontend
 ps aux | grep adminer
 ps aux | grep api-store-info
+ps aux | grep mlflow
 
-docker rmi leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-frontend:latest leodocker2021/my-repo-mlops-api-store-info:latest
+docker rmi leodocker2021/my-repo-mlops-minio:latest leodocker2021/my-repo-mlops-mlflow:latest leodocker2021/my-repo-mlops-api-inference:latest leodocker2021/my-repo-mlops-api-train:latest leodocker2021/my-repo-mlops-frontend:latest leodocker2021/my-repo-mlops-api-store-info:latest
 
 
 # Define an array of service names
-services=( "frontend" "api-train" "api-inference" "api-store-info")
+services=( "frontend" "api-train" "api-inference" "api-store-info" "mlflow" "minio")
 
 # Check if at least one argument is passed
 if [ "$#" -eq 0 ]; then
@@ -40,7 +38,7 @@ else
 fi
 
 # Define an array of corresponding Docker image names
-images=( "frontend" "api-train" "api-inference" "api-store-info")
+images=( "frontend" "api-train" "api-inference" "api-store-info" "mlflow" "minio")
 
 # Loop through the service names and corresponding image names
 for (( i=0; i<${#services[@]}; i++ )); do
@@ -83,7 +81,7 @@ if microk8s status | grep -q "microk8s is running"; then
       running=$(echo "$status" | grep -c "Running")
 
       # Check if all 4 pods are in the "Running" state
-      if [ "$running" -eq 6 ]; then
+      if [ "$running" -gt 8 ]; then
           echo "All pods are running"
           break
       else
@@ -93,7 +91,6 @@ if microk8s status | grep -q "microk8s is running"; then
     done
     echo "executing k8_start.."
     source k8_start.sh
-    sudo systemctl start mlflow_serv.service
     exit 1
   else
       echo "MicroK8s is not running"
@@ -106,8 +103,8 @@ docker image inspect leodocker2021/my-repo-mlops-api-inference:latest | grep -E 
 docker image inspect leodocker2021/my-repo-mlops-api-train:latest | grep -E 'Id|Created'
 docker image inspect leodocker2021/my-repo-mlops-frontend:latest | grep -E 'Id|Created'
 docker image inspect leodocker2021/my-repo-mlops-api-store-info:latest | grep -E 'Id|Created'
-
-
+docker image inspect leodocker2021/my-repo-mlops-mlflow:latest | grep -E 'Id|Created'
+docker image inspect leodocker2021/my-repo-mlops-minio:latest | grep -E 'Id|Created'
 
 
 

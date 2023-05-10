@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
+    kompose.version: 1.28.0 (c4137012e)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: api-store-info
+  name: api-store-info
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: api-store-info
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o komposefiles/ --volumes hostPath
+        kompose.version: 1.28.0 (c4137012e)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/proyecto3-default: "true"
+        io.kompose.service: api-store-info
+    spec:
+      containers:
+        - env:
+            - name: DB_HOST
+              value: db
+            - name: DB_NAME
+              value: mydatabase
+            - name: DB_PASSWORD
+              value: mypassword
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: myuser
+          image: leodocker2021/my-repo-mlops-api-store-info:latest
+          name: api-store-info
+          ports:
+            - containerPort: 84
+          resources: {}
+          volumeMounts:
+            - mountPath: /work2
+              name: my-data
+            - mountPath: /inference
+              name: my-data-inference
+      restartPolicy: Always
+      volumes:
+        - hostPath:
+            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/proyecto3
+          name: my-data
+        - hostPath:
+            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/proyecto3
+          name: my-data-inference
+status: {}
