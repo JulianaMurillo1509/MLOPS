@@ -25,13 +25,6 @@ services:
       context: .
       dockerfile: simple_train/Dockerfile
     image: leodocker2021/my-repo-mlops-api-train:latest
-    resources:
-      limits:
-        memory: "13Gi"
-        cpu: "4"
-      requests:
-        memory: "12Gi"
-        cpu: "3.0"
     environment:
       DB_HOST: 10.43.102.111
       DB_PORT: 5432
