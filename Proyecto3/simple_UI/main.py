@@ -65,6 +65,11 @@ with st.form("my_form"):
     Wilderness_Area = st.selectbox("Choose the wilderness Area", [i for i in WILDERNESS.keys()], index=0)
     Soil_Type = st.selectbox("Choose the soil type", [i for i in SOIL_TYPE.keys()], index=0)
 
+
+    # Convertir los valores seleccionados en los números correspondientes
+    wilderness_num = WILDERNESS[Wilderness_Area]
+    soil_type_num = SOIL_TYPE[Soil_Type]
+
     submitted = st.form_submit_button("Submit")
     if submitted:
         data = {
@@ -78,8 +83,8 @@ with st.form("my_form"):
             "Hillshade_Noon": Hillshade_Noon,
             "Hillshade_3pm": Hillshade_3pm,
             "Horizontal_Distance_To_Fire_Points": Horizontal_Distance_To_Fire_Points,
-            "Wilderness_Area": Wilderness_Area,
-            "Soil_Type": Soil_Type  
+            "Wilderness_Area": wilderness_num,
+            "Soil_Type": soil_type_num  
         }
 
         response = requests.post("http://"+HOST+":8503/do_inference/covertype/", json=data)
