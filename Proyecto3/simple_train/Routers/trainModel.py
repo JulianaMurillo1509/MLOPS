@@ -212,23 +212,24 @@ async def train_model(data:str='covertype'):
     mlflow.autolog(log_model_signatures=True, log_input_examples=True)
 
     s = setup(df, target = 'Cover_Type', transform_target = True, log_experiment = True, experiment_name = 'test 1')
+
+    # comparar modelos
     best = compare_models()
     # finalize the model
     final_best = finalize_model(best)
-    best_model_name = best[0].__class__.__name__
-    print(best_model_name)
     # save model to disk
     save_model(final_best, 'test1')
    
     # Registra el modelo en MLflow
     mlflow.sklearn.log_model(final_best, 'final_best', registered_model_name='final_best_production')
+
     #agrega el modelo a producción
     model_name = "final_best_production"
 
     # crea un cliente MLflow
     client = MlflowClient()
 
-    # Obtiene la información de todas las versiones de la mas reciente a la más antigua
+    # Obtiene la información de todas las versiones sin stage la mas reciente a la más antigua
     all_versions = client.get_latest_versions("final_best_production", stages=None)
     print('versiones',all_versions)
     # Verifica si hay versiones registradas del modelo
@@ -250,9 +251,9 @@ async def train_model(data:str='covertype'):
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
-    metric = metrics.r2_score(y_test,y_pred)
+    metricR2 = metrics.r2_score(y_test,y_pred)
 
-    return f"Este modelo se entreno con la version {latest_version} de {best_model_name} y su r2_score es {metric}"
+    return f"Este modelo se entreno con la version {latest_version} y su r2_score es {metricR2}"
 
 
 @router.get("/train_from_csv")
