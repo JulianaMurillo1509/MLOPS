@@ -38,8 +38,6 @@ services:
       - "8502:82"
     depends_on:
       - db
-    mem_limit: 10g
-    cpus: 3
   db:
     image: postgres:latest
     restart: always

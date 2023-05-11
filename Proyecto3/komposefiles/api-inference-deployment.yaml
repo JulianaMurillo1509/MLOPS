@@ -22,13 +22,13 @@ spec:
         kompose.version: 1.28.0 (c4137012e)
       creationTimestamp: null
       labels:
-        io.kompose.network/proyecto2-default: "true"
+        io.kompose.network/proyecto3-default: "true"
         io.kompose.service: api-inference
     spec:
       containers:
         - env:
             - name: DB_HOST
-              value: db
+              value: 10.43.102.111
             - name: DB_NAME
               value: mydatabase
             - name: DB_PASSWORD
@@ -50,9 +50,9 @@ spec:
       restartPolicy: Always
       volumes:
         - hostPath:
-            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/proyecto2
+            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/Proyecto3
           name: my-data
         - hostPath:
-            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/proyecto2
+            path: /Users/leonardo.taleron/PycharmProjects/proyecto-MLOPS/Proyecto3
           name: my-data-inference
 status: {}
