@@ -6,9 +6,7 @@ El objetivo principal de un Feature Store es proporcionar una única fuente de v
 un Feature Store en machine learning y MLOps sirve para gestionar y organizar las características utilizadas en los modelos de ML, asegurando de cierta forma su calidad, facilitando su acceso ya que no requiere conexion a base de datos "off-line" y reutilización, y mejorando la eficiencia y la colaboración en el desarrollo y despliegue de modelos
 
 en conclusion es una capa adicional de abstraccion de datos.
-
 # Instrucciones para ver el ejemplo de feature store
-
 
 - entrar a la carpeta /home/estudiante/repo/MLOPS/taller2
 - levantar jupyterlab> jupyter lab --ip 0.0.0.0 --port=8181
