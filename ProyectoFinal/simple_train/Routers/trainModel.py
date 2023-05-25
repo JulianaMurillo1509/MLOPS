@@ -41,7 +41,7 @@ def connect_database():
     print("DB_PORT", DB_PORT)
     # Connect to the database
     print('DB_PASSWORD',DB_PASSWORD)
-    engine = create_engine('postgresql://myuser:mypassword@db/mydatabase')
+    engine = create_engine('postgresql://myuser:'+DB_PASSWORD+'@'+DB_HOST+':'+DB_PORT+'/mydatabase')
     Session = sessionmaker(bind=engine)
     session = Session()
     print("session",session)
@@ -212,7 +212,7 @@ def clean_data(df):
     Rep = df.replace('?', np.NaN) 
     nacheck = Rep.isnull().sum() 
     nacheck
-    datacopy= df.drop(['weight','payer_code','medical_specialty'],axis=1)
+    datacopy= df.drop(['id','weight','payer_code','medical_specialty'],axis=1)
     datacopy['30readmit'] = np.where(datacopy['readmitted'] == 'NO', 0, 1)
     datacopy = datacopy[((datacopy.discharge_disposition_id != 11) & 
                                           (datacopy.discharge_disposition_id != 13) &
@@ -414,8 +414,3 @@ async def train_model(data:str='diabetes'):
     metricR2 = metrics.r2_score(Y_test, y_pred)
     print("R2 Score:", metricR2)
     return f"This model was trained with version {latest_version} and has an R2 score of {metricR2}"
-
-
-
-
-

@@ -1,17 +1,48 @@
 from pydantic import BaseModel
 
-class Covertype(BaseModel):
-    Elevation: int =  2991
-    Aspect	: int = 119
-    Slope	: int = 7
-    Horizontal_Distance_To_Hydrology	: int = 67
-    Vertical_Distance_To_Hydrology	: int = 11
-    Horizontal_Distance_To_Roadways	: int = 1015
-    Hillshade_9am	: int = 233
-    Hillshade_Noon	: int = 234
-    Hillshade_3pm	: int = 133
-    Horizontal_Distance_To_Fire_Points	: int = 1570
-    Wilderness_Area	: int = 0
-    Soil_Type: int = 23
+class Diabetes(BaseModel):
+    race: str
+    gender: str
+    age: str
+    discharge_disposition_id: int
+    admission_source_id: int
+    num_lab_procedures: int
+    num_procedures: int
+    num_medications: int
+    number_outpatient: int
+    number_emergency: int
+    number_inpatient: int
+    diag_1: int
+    diag_2: int
+    diag_3: int
+    number_diagnoses: int
+    max_glu_serum: str
+    A1Cresult: str
+    metformin: str
+    repaglinide: str
+    nateglinide: str
+    chlorpropamide: str
+    glimepiride: str
+    acetohexamide: str
+    glipizide: str
+    glyburide: str
+    tolbutamide: str
+    pioglitazone: str
+    rosiglitazone: str
+    acarbose: str
+    miglitol: str
+    troglitazone: str
+    tolazamide: str
+    examide: str
+    citoglipton: str
+    insulin: str
+    glyburide_metformin: str
+    glipizide_metformin: str
+    glimepiride_pioglitazone: str
+    metformin_rosiglitazone: str
+    metformin_pioglitazone: str
+    change: str
+    diabetesMed: str
+    time_in_hospital: int
 
 	
