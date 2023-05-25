@@ -35,7 +35,6 @@ async def root():
 
 @router.post("/diabetes")
 async def test_model(diabetes: Diabetes, model:str='diabetes'):
-    print("aqui paso")
     diabetes_dict = {
         'race': diabetes.race,
         'gender': diabetes.gender,
@@ -94,9 +93,8 @@ async def test_model(diabetes: Diabetes, model:str='diabetes'):
                 'glyburide_metformin', 'glipizide_metformin',
                 'glimepiride_pioglitazone', 'metformin_rosiglitazone',
                 'metformin_pioglitazone', 'change', 'diabetesMed']
-    print("aqui paso2")
+    
     input_df = diabetes_df[column_order]
-    print("aqui")
 
     os.environ['MLFLOW_S3_ENDPOINT_URL'] = "http://10.43.102.111:9000"
     os.environ['AWS_ACCESS_KEY_ID'] = 'admin'
@@ -105,14 +103,11 @@ async def test_model(diabetes: Diabetes, model:str='diabetes'):
     # connect to mlflow
     # crea un cliente MLflow
     client = MlflowClient()
-    print("aqui1")
     mlflow.set_tracking_uri("http://10.43.102.111:5000")
 
     model_name = "final_best_production_Last_Project_MLOPS"
-    print("aqui2")
     # Obtiene la información de todas las versiones de la mas reciente a la más antigua
     all_versions = client.get_latest_versions("final_best_production_Last_Project_MLOPS", stages= ["Production"])
-    print("aqu3")
     if len(all_versions) > 1:
         old_version = all_versions[0].version
 
@@ -126,12 +121,9 @@ async def test_model(diabetes: Diabetes, model:str='diabetes'):
     latest_model_name = all_versions[-1].name
     latest_model_stage = all_versions[-1].current_stage
     latest_version = all_versions[-1].version
-    print("aqui4")
     model_production_uri = "models:/{model_name}/production".format(model_name=model_name)
-    print("aqui5")
     model_loaded = mlflow.pyfunc.load_model(model_uri=model_production_uri)
-    print("aqui6")
     prediction = model_loaded.predict(input_df)
-    print("aqui7")
+
 
     return {f'el modelo que se utilizó para la inferencia es {latest_model_name} que esta en {latest_model_stage} su versión es {latest_version} y la predicción es': int(prediction[0])}
