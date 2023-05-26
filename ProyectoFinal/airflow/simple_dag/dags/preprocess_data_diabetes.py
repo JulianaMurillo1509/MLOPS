@@ -13,13 +13,14 @@ with DAG('data_cleaning_dag', schedule_interval='0 23 * * *', default_args=defau
     read_data_task = PythonOperator(
         task_id='read_data',
         python_callable=read_data,
-        op_kwargs={'data': 'your_data_argument_here'}
+        op_kwargs={'data': 'Diabetes'}
     )
 
     clean_data_task = PythonOperator(
         task_id='clean_data',
         python_callable=clean_data,
-        provide_context=True
+        provide_context=True,
+        op_kwargs = {'data': 'Diabetes_clean'}
     )
 
     read_data_task >> clean_data_task

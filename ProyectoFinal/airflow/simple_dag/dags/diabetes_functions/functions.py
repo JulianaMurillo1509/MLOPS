@@ -38,7 +38,9 @@ def connect_database():
     return session,engine
 
 
-def clean_data(df):
+def clean_data(data):
+    print('***clean_data***', data)
+    #leer data de diabetes_clean
     Rep = df.replace('?', np.NaN)
     nacheck = Rep.isnull().sum()
     nacheck
@@ -125,11 +127,11 @@ def clean_data(df):
 
 
 def read_data(data):
-    print('***read_data***', data)
+    print('***read_data***',data)
     session, engine = connect_database()
     print('***session***', session)
     # Execute a SELECT query on the diabetes table
-    query = text("SELECT * FROM Diabetes")
+    query = text("SELECT * FROM "+data)
     result = session.execute(query)
     # Create a pandas DataFrame from the query result
     diabetes = pd.DataFrame(result.fetchall(), columns=result.keys())
