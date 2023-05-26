@@ -41,7 +41,10 @@ def connect_database():
     print("DB_PORT", DB_PORT)
     # Connect to the database
     print('DB_PASSWORD',DB_PASSWORD)
-    engine = create_engine('postgresql://myuser:'+DB_PASSWORD+'@'+DB_HOST+':'+DB_PORT+'/mydatabase')
+    #engine = create_engine('postgresql://myuser:' + DB_PASSWORD + '@' + DB_HOST + '/mydatabase')
+    #engine = create_engine('postgresql://airflow:' + DB_PASSWORD + '@' + DB_HOST + '/postgres')
+    # postgresql+psycopg2://airflow:***@postgres/airflow
+    engine = create_engine('postgresql+psycopg2://airflow:airflow@localhost:5432/postgres')
     Session = sessionmaker(bind=engine)
     session = Session()
     print("session",session)
@@ -210,8 +213,7 @@ def insert_data(diabetes):
 def clean_data(df):
 
     Rep = df.replace('?', np.NaN) 
-    nacheck = Rep.isnull().sum() 
-    nacheck
+    nacheck = Rep.isnull().sum()
     datacopy= df.drop(['id','weight','payer_code','medical_specialty'],axis=1)
     datacopy['30readmit'] = np.where(datacopy['readmitted'] == 'NO', 0, 1)
     datacopy = datacopy[((datacopy.discharge_disposition_id != 11) & 

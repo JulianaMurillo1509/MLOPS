@@ -7,7 +7,7 @@ services:
       dockerfile: simple_UI/Dockerfile
     image: leodocker2021/my-repo-mlops-frontend:latest
     environment:
-      HOST: 10.43.102.111
+      HOST: localhost
       #HOST: 192.168.3.6
       #HOST: ${HOST:-$(hostname -I | awk '{print $1}')}
     ports:
@@ -16,7 +16,7 @@ services:
       - api-train
       - api-inference
       - api-store-info
-      - adminer
+      # - adminer
     volumes:
         - my-data:/work0
 
@@ -26,27 +26,27 @@ services:
       dockerfile: simple_train/Dockerfile
     image: leodocker2021/my-repo-mlops-api-train:latest
     environment:
-      DB_HOST: 10.43.102.111
+      DB_HOST: localhost
       DB_PORT: 5432
-      DB_NAME: mydatabase
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
+      DB_NAME: postgres
+      DB_USER: airflow
+      DB_PASSWORD: airflow
     volumes:
       - my-data:/work1
       - my-data-inference:/inference
     ports:
       - "8502:82"
-    depends_on:
-      - db
-  db:
-    image: postgres:latest
-    restart: always
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
-    ports:
-      - "5432:5432"
+    #depends_on:
+    #  - db
+  #db:
+  #  image: postgres:latest
+  #  restart: always
+  #  environment:
+  #    POSTGRES_USER: myuser
+  #    POSTGRES_PASSWORD: mypassword
+  #    POSTGRES_DB: mydatabase
+  #  ports:
+  #    - "5433:5432"
 
   api-inference:
     build:
@@ -54,15 +54,15 @@ services:
       dockerfile: simple_inference/Dockerfile
     image: leodocker2021/my-repo-mlops-api-inference:latest
     environment:
-      DB_HOST: 10.43.102.111
+      DB_HOST: localhost
       DB_PORT: 5432
-      DB_NAME: mydatabase
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
+      DB_NAME: postgres
+      DB_USER: airflow
+      DB_PASSWORD: airflow
     ports:
       - "8503:83"
     depends_on:
-      - db
+      - api-train
     volumes:
       - my-data:/work2
       - my-data-inference:/inference
@@ -73,7 +73,7 @@ services:
       dockerfile: simple_store_info/Dockerfile
     image: leodocker2021/my-repo-mlops-api-store-info:latest
     environment:
-      DB_HOST: 10.43.102.111
+      DB_HOST: localhost
       DB_PORT: 5432
       DB_NAME: mydatabase
       DB_USER: myuser
@@ -81,23 +81,46 @@ services:
     ports:
       - "8504:84"
     depends_on:
-      - db
+      - api-train
     volumes:
       - my-data:/work2
       - my-data-inference:/inference
-
-  adminer:
-    image: adminer
-    restart: always
+  jupyter:
+    user: root
+    build:
+      context: .
+      dockerfile: jupyter/Dockerfile
+    image: workspace/jupyter
+    container_name: jupyter
+    restart: on-failure
     ports:
-      - 8080:8080
-    environment:
-      ADMINER_DEFAULT_DRIVER: postgres
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
+      - "${JUPYTER_PORT}:8888"
     depends_on:
-      - db
+      - api-train
+
+    environment:
+      #MLFLOW_TRACKING_URI: "http://mlflow:5000"
+      JUPYTER_ENABLE_LAB: ${JUPYTER_ENABLE_LAB}
+      #SFTP_HOST: ${SFTP_HOST}
+      JUPYTER_USERNAME: ${JUPYTER_USERNAME}
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN}
+    volumes:
+      - ./notebooks/:/home/${JUPYTER_USERNAME}/work
+      #- ./keys/ssh_host_rsa_key:/home/${JUPYTER_USERNAME}/.ssh/ssh_host_rsa_key:ro
+      #- ./keys/ssh_host_ed25519_key:/home/${JUPYTER_USERNAME}/.ssh/ssh_host_ed25519_key:ro
+      #- ./keys/config:/home/${JUPYTER_USERNAME}/.ssh/config:ro
+  #adminer:
+  #  image: adminer
+  #  restart: always
+  #  ports:
+  #    - 8090:8080
+  #  environment:
+  #    ADMINER_DEFAULT_DRIVER: postgres
+  #    POSTGRES_USER: myuser
+  #    POSTGRES_PASSWORD: mypassword
+  #    POSTGRES_DB: mydatabase
+  #  depends_on:
+  #    - db
 
 
 volumes:
