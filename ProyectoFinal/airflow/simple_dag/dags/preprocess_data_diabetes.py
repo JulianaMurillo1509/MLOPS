@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
-from diabetes_functions.functions import clean_data, read_data
+from diabetes_functions.functions import clean_data, read_data,train_model
 
 default_args = {
     'start_date': datetime(2023, 5, 25),
@@ -21,6 +21,13 @@ with DAG('data_cleaning_dag', schedule_interval='0 23 * * *', default_args=defau
         python_callable=clean_data,
         provide_context=True,
         op_kwargs = {'data': 'Diabetes_clean'}
+    )
+
+    train_model_task = PythonOperator(
+        task_id='train_models',
+        python_callable=train_model,
+        provide_context=True,
+        op_kwargs={'data': 'Diabetes_clean'}
     )
 
     read_data_task >> clean_data_task
