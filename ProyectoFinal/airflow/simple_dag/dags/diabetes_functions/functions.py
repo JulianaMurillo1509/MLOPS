@@ -456,8 +456,7 @@ def train_model(data: str = 'diabetes_clean'):
     mlflow.autolog(log_model_signatures=True, log_input_examples=True)
 
     # Set up the data
-    s = setup(clean_df, target='readmit', transform_target=True, log_experiment=True,
-              experiment_name='Experimento proyecto final MLOPS 2023')
+    s = setup(clean_df, target='readmit', transform_target=True, log_experiment=True,experiment_name='Experimento proyecto final MLOPS 2023')
     # Compare models
     best_models = compare_models(n_select=10, sort='R2', fold=5)
     # finalize the model
