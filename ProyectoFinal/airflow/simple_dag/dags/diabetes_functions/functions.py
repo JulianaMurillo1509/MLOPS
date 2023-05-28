@@ -23,7 +23,7 @@ from sqlalchemy.ext.declarative import declarative_base
 DB_NAME= "postgres"
 DB_USER="airflow"
 DB_PASSWORD="airflow"
-DB_HOST="192.168.10.18"
+DB_HOST="10.43.102.111"
 DB_PORT="5432"
 os.environ['DB_NAME']=DB_NAME
 os.environ['DB_USER']=DB_USER
