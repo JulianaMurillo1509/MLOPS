@@ -342,7 +342,7 @@ async def train_model(data:str='diabetes_clean'):
 
     
     # Connect to MLflow
-    mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow.set_tracking_uri("http://10.43.102.111:5000")
 
     # Enable autologging in MLflow
     mlflow.autolog(log_model_signatures=True, log_input_examples=True)
