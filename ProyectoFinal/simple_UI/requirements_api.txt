@@ -4,3 +4,4 @@ requests==2.28.2
 protobuf==3.19.
 altair[vegalite]==4.0.0
 streamlit==1.2.0
+hydralit_components

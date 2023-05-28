@@ -1,105 +1,245 @@
 import requests
 import streamlit as st
-import pandas as pd
-import time
-import sys
-import os
+import hydralit_components as hc
 
-HOST=os.environ['HOST']
+# Define the input fields
+inputs_form = [
+    ("race", "Race"),
+    ("gender", "Gender"),
+    ("age", "Age"),
+    ("discharge_disposition_id", "Discharge Disposition ID"),
+    ("admission_source_id", "Admission Source ID"),
+    ("time_in_hospital", "Time in Hospital"),
+    ("num_lab_procedures", "Number of Lab Procedures"),
+    ("num_procedures", "Number of Procedures"),
+    ("num_medications", "Number of Medications"),
+    ("number_outpatient", "Number of Outpatient Visits"),
+    ("number_emergency", "Number of Emergency Visits"),
+    ("number_inpatient", "Number of Inpatient Visits"),
+    ("diag_1", "Diagnosis 1"),
+    ("diag_2", "Diagnosis 2"),
+    ("diag_3", "Diagnosis 3"),
+    ("number_diagnoses", "Number of Diagnoses"),
+    ("max_glu_serum", "Max Glucose Serum"),
+    ("A1Cresult", "A1C Result"),
+    ("metformin", "Metformin"),
+    ("repaglinide", "Repaglinide"),
+    ("nateglinide", "Nateglinide"),
+    ("chlorpropamide", "Chlorpropamide"),
+    ("glimepiride", "Glimepiride"),
+    ("acetohexamide", "Acetohexamide"),
+    ("glipizide", "Glipizide"),
+    ("glyburide", "Glyburide"),
+    ("tolbutamide", "Tolbutamide"),
+    ("pioglitazone", "Pioglitazone"),
+    ("rosiglitazone", "Rosiglitazone"),
+    ("acarbose", "Acarbose"),
+    ("miglitol", "Miglitol"),
+    ("troglitazone", "Troglitazone"),
+    ("tolazamide", "Tolazamide"),
+    ("examide", "Examide"),
+    ("citoglipton", "Citoglipton"),
+    ("insulin", "Insulin"),
+    ("glyburide_metformin", "Glyburide Metformin"),
+    ("glipizide_metformin", "Glipizide Metformin"),
+    ("glimepiride_pioglitazone", "Glimepiride Pioglitazone"),
+    ("metformin_rosiglitazone", "Metformin Rosiglitazone"),
+    ("metformin_pioglitazone", "Metformin Pioglitazone"),
+    ("change", "Change"),
+    ("diabetesMed", "Diabetes Medication"),
+]
 
-WILDERNESS = {"Cache": 0, "Commanche": 1, "Rawah": 2,"Neota": 3,}
-SOIL_TYPE= {"C2702":0,"C2703":1,"C2704":3,"C2705":4,"C2706":5,
-            "C2717":6,"C3501":7,"C3502":8,"C4201":9,"C4703":10,
-            "C4704":11,"C4744":12,"C4758":13,"C5101":14,"C5151":15,
-            "C6101":16,"C6102":17,"C6731":18,"C7101":19,"C7102":20,
-            "C7103":21,"C7201":22,"C7202":23,"C7700":24,"C7701":25,
-            "C7702":26,"C7709":27,"C7710":28,"C7745":29,"C7746":30,
-            "C7755":31,"C7756":32,"C7757":33,"C7790":34,"C8703":35,
-            "C8707":36,"C8708":37,"C8771":38,"C872":39, "C876":40}
 
+# Set Streamlit page configuration
+st.set_page_config(
+    page_title="Diabetes Prediction",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
-# https://discuss.streamlit.io/t/version-0-64-0-deprecation-warning-for-st-file-uploader-decoding/4465
-st.set_option("deprecation.showfileUploaderEncoding", False)
+# Apply custom styles to the form elements
+st.markdown(
+    """
+    <style>
+    .stButton>button {
+        background-color: #FF5722;
+        color: white;
+        font-weight: bold;
+        padding: 0.25rem 0.5rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .stTextInput > label {
+    font-size:120%;
+    font-weight:bold;
+    color:black;
+    background:linear-gradient(to bottom, #3399ff 0%,##F3F3F3 100%);
+    border: 2px;
+    border-radius: 3px;
+    }
 
-# defines an h1 header
-st.title("Proyecto 3 - Cover type web app")
+    [data-baseweb="input"]{
+    background:linear-gradient(to bottom, #3399ff 0%,##F3F3F3 100%);
+    border: 2px;
+    border-radius: 3px;
+     width: 50%;
+    }
 
-# displays a file uploader widget
-st.header('Section to upload file')
-file = st.file_uploader(  "",
-        key="1",
-        help="To activate 'wide mode', go to the hamburger menu > Settings > turn on 'wide mode'",)
-# displays a button
-if st.button("Insert data in the database"):
-        if file is not None:
-            files = {"file": file.getvalue()}
-            file_container = st.expander("Check your uploaded .csv")
-            shows = pd.read_csv(file)
-            file.seek(0)
-            file_container.write(shows)
-            with st.spinner('Uploading data to database...'):
-                response = requests.post("http://"+HOST+":8502/train_model/uploadfile/", files=files)
-                st.success(response.json())
+    input[class]{
+    font-weight: bold;
+    font-size:120%;
+    color: black;
+    }
+    .small-input {
+        max-width: 50px;
+    }
+    .column {
+        float: left;
+        width: 15%;
+        padding: 0 10px;
+    }
+    .row::after {
+        content: "";
+        clear: both;
+        display: table;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Create a form for input values
+def create_input_form():
+    inputs = {}
+
+    default_values = { "race": "Caucasian",
+                        "gender": "Female",
+                        "age": "50-60",
+                        "discharge_disposition_id": 1,
+                        "admission_source_id": 7,
+                        "time_in_hospital": 4,
+                        "num_lab_procedures": 40,
+                        "num_procedures": 2,
+                        "num_medications": 12,
+                        "number_outpatient": 0,
+                        "number_emergency": 1,
+                        "number_inpatient": 0,
+                        "diag_1": "428",
+                        "diag_2": "250",
+                        "diag_3": "401",
+                        "number_diagnoses": 6,
+                        "max_glu_serum": "None",
+                        "A1Cresult": "None",
+                        "metformin": "No",
+                        "repaglinide": "No",
+                        "nateglinide": "No",
+                        "chlorpropamide": "No",
+                        "glimepiride": "No",
+                        "acetohexamide": "No",
+                        "glipizide": "No",
+                        "glyburide": "No",
+                        "tolbutamide": "No",
+                        "pioglitazone": "No",
+                        "rosiglitazone": "No",
+                        "acarbose": "No",
+                        "miglitol": "No",
+                        "troglitazone": "No",
+                        "tolazamide": "No",
+                        "examide": "No",
+                        "citoglipton": "No",
+                        "insulin": "No",
+                        "glyburide_metformin": "No",
+                        "glipizide_metformin": "No",
+                        "glimepiride_pioglitazone": "No",
+                        "metformin_rosiglitazone": "No",
+                        "metformin_pioglitazone": "No",
+                        "change": "No",
+                        "diabetesMed": "Yes"
+                        }
+
+    with st.form("Diabetes Form"):
+        col1, col2, col3,col4,col5,col6 = st.columns(6)  # Split the form into three columns
+
+        # Create input fields in the first column
+        with col1:
+            for i in range(len(inputs_form) // 6):
+                attribute, label = inputs_form[i]
+                value = st.text_input(label, key=attribute, value=default_values[attribute])
+                inputs[attribute] = value
+
+        # Create input fields in the second column
+        with col2:
+            for i in range(len(inputs_form) // 6, 2 * len(inputs_form) // 6):
+                attribute, label = inputs_form[i]
+                value = st.text_input(label, key=attribute, value=default_values[attribute])
+                inputs[attribute] = value
+
+        # Create input fields in the third column
+        with col3:
+            for i in range(2 * len(inputs_form) // 6, 3 * len(inputs_form) // 6):
+                attribute, label = inputs_form[i]
+                value = st.text_input(label, key=attribute, value=default_values[attribute])
+                inputs[attribute] = value
+
+        with col4:
+            for i in range(3 * len(inputs_form) // 6, 4 * len(inputs_form) // 6):
+                attribute, label = inputs_form[i]
+                value = st.text_input(label, key=attribute, value=default_values[attribute])
+                inputs[attribute] = value
+
+        # Create input fields in the second column
+        with col5:
+            for i in range(4 * len(inputs_form) // 6, 5 * len(inputs_form) // 6):
+                attribute, label = inputs_form[i]
+                value = st.text_input(label, key=attribute, value=default_values[attribute])
+                inputs[attribute] = value
+
+        # Create input fields in the third column
+        with col6:
+            for i in range(5 * len(inputs_form) // 6, 6 * len(inputs_form) // 6):
+                attribute, label = inputs_form[i]
+                value = st.text_input(label, key=attribute, value=default_values[attribute])
+                inputs[attribute] = value
+
+        # Apply custom styles to the submit button
+        st.markdown(
+            """
+            <style>
+            .stButton button:hover {
+                background-color: #E64A19;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+        submit_button = st.form_submit_button("Predict")
+
+    return inputs, submit_button
+
+# Main function
+def main():
+    st.title("Diabetes Prediction - Proyecto Final")
+
+    with hc.HyLoader('Predicting...',hc.Loaders.standard_loaders,index=[0]):
+     inputs, submit_button = create_input_form()
+     if submit_button:
+        if any(value == "" for value in inputs.values()):
+            st.error("Error: Please fill in all the input fields.")
         else:
-            st.warning("Please choose a file to upload.")
+            # Prepare the data payload
+            data = inputs
+            # Make a POST request to  FastAPI endpoint
+            
+            response = requests.post("http://localhost:8503/do_inference/diabetes", json=data)
+    
+            # Check if the request was successful
+            if response.status_code == 200:
+                result = response.json()
+                st.success(result)
+            else:
+                st.error("Error: Failed to make the prediction.")
 
-st.header("Section to Train Model")
-if st.button("train model"):
-        response = requests.get("http://"+HOST+":8502/train_model/train/")
-        st.success(response.text)
-
-
-st.header("Section to do Inference")
-with st.form("my_form"):
-
-    Elevation = st.text_input("Elevation",value=2991)
-    Aspect = st.text_input("Aspect",value=119)
-    Slope = st.text_input("Slope",value=7)
-    Horizontal_Distance_To_Hydrology = st.text_input("Horizontal Distance To Hydrology",value=67)
-    Vertical_Distance_To_Hydrology = st.text_input("Vertical Distance To Hydrology",value=11)
-    Horizontal_Distance_To_Roadways = st.text_input("Horizontal Distance To Roadways",value=1015)
-    Hillshade_9am = st.text_input("Hillshade 9am",value=233)
-    Hillshade_Noon = st.text_input("Hillshade Noon",value=234)
-    Hillshade_3pm = st.text_input("Hillshade 3pm",value=11)
-    Horizontal_Distance_To_Fire_Points = st.text_input("Horizontal Distance To Fire Points", value=1570)
-    Wilderness_Area = st.selectbox("Choose the wilderness Area", [i for i in WILDERNESS.keys()], index=0)
-    Soil_Type = st.selectbox("Choose the soil type", [i for i in SOIL_TYPE.keys()], index=0)
-
-
-    # Convertir los valores seleccionados en los números correspondientes
-    wilderness_num = WILDERNESS[Wilderness_Area]
-    soil_type_num = SOIL_TYPE[Soil_Type]
-
-    submitted = st.form_submit_button("Submit")
-    if submitted:
-        data = {
-            "Elevation": Elevation,
-            "Aspect": Aspect,
-            "Slope": Slope,
-            "Horizontal_Distance_To_Hydrology": Horizontal_Distance_To_Hydrology,
-            "Vertical_Distance_To_Hydrology": Vertical_Distance_To_Hydrology,
-            "Horizontal_Distance_To_Roadways": Horizontal_Distance_To_Roadways,
-            "Hillshade_9am": Hillshade_9am,
-            "Hillshade_Noon": Hillshade_Noon,
-            "Hillshade_3pm": Hillshade_3pm,
-            "Horizontal_Distance_To_Fire_Points": Horizontal_Distance_To_Fire_Points,
-            "Wilderness_Area": wilderness_num,
-            "Soil_Type": soil_type_num  
-        }
-
-        response = requests.post("http://"+HOST+":8503/do_inference/covertype/", json=data)
-
-        if response.ok:
-            st.success(response.text)
-        else:
-            st.error("failed to do inference")
-
-st.header("Section to Save Info")
-if st.button("Save Info"):
-        response = requests.get("http://"+HOST+":8504/store/convert_inference_csv/")
-
-        if response.ok:
-                st.success(response.text)
-        else:
-                st.error("failed to do inference")
-                st.success(response.text)
+# Run the application
+if __name__ == "__main__":
+    main()
