@@ -18,6 +18,7 @@ import pandas as pd
 from pycaret.regression import *
 import mlflow
 from mlflow.tracking import MlflowClient
+from sqlalchemy.ext.declarative import declarative_base
 
 DB_NAME= "postgres"
 DB_USER="airflow"
@@ -50,16 +51,153 @@ def connect_database():
     print("engine",engine)
     return session,engine
 
+def insert_data(diabetes):
+    print('***insert_data***')
+    # Connect to the database
+    session, engine = connect_database()
+    print("session",session)
+    print("engine", engine)
+    print("***df diabetes***", diabetes.info())
+    # Define the table schema
+    Base = declarative_base()
+    # Define diabetes table model
+
+    class Diabetes(Base):
+        __tablename__ = 'diabetes'      
+        id = Column(Integer, primary_key=True)
+        encounter_id = Column(Integer)
+        patient_nbr = Column(Integer)
+        race = Column(String)
+        gender = Column(String)
+        age = Column(String)
+        weight = Column(String)
+        admission_type_id = Column(Integer)
+        discharge_disposition_id = Column(Integer)
+        admission_source_id = Column(Integer)
+        time_in_hospital = Column(Integer)
+        payer_code = Column(String)
+        medical_specialty = Column(String)
+        num_lab_procedures = Column(Integer)
+        num_procedures = Column(Integer)
+        num_medications = Column(Integer)
+        number_outpatient = Column(Integer)
+        number_emergency = Column(Integer)
+        number_inpatient = Column(Integer)
+        diag_1 = Column(String)
+        diag_2 = Column(String)
+        diag_3 = Column(String)
+        number_diagnoses = Column(Integer)
+        max_glu_serum = Column(String)
+        A1Cresult = Column(String)
+        metformin = Column(String)
+        repaglinide = Column(String)
+        nateglinide = Column(String)
+        chlorpropamide = Column(String)
+        glimepiride = Column(String)
+        acetohexamide = Column(String)
+        glipizide = Column(String)
+        glyburide = Column(String)
+        tolbutamide = Column(String)
+        pioglitazone = Column(String)
+        rosiglitazone = Column(String)
+        acarbose = Column(String)
+        miglitol = Column(String)
+        troglitazone = Column(String)
+        tolazamide = Column(String)
+        examide = Column(String)
+        citoglipton = Column(String)
+        insulin = Column(String)
+        glyburide_metformin = Column(String)
+        glipizide_metformin = Column(String)
+        glimepiride_pioglitazone = Column(String)
+        metformin_rosiglitazone = Column(String)
+        metformin_pioglitazone = Column(String)
+        change = Column(String)
+        diabetesMed = Column(String)
+        readmitted = Column(String)
+
+    print('Base',Base)
+    # Create table if it doesn't exist
+    Base.metadata.create_all(bind=engine)
+    # Insert the data into the table
+    print('Insert the data into the table')
+    diabetes_table = Table('diabetes',Base.metadata, autoload=True)
+    # Print schema of the diabetes table
+    print("diabetes_table:",diabetes_table)
+    # Create a connection object
+    print("*** example query results:",session.execute(text('SELECT * FROM diabetes order by id desc limit 10')))
+
+    for i, row in diabetes.iterrows():
+        print("***i:",i)
+        diabetes = Diabetes(    encounter_id=row['encounter_id'],
+                                patient_nbr=row['patient_nbr'],
+                                race=row['race'],
+                                gender=row['gender'],
+                                age=row['age'],
+                                weight=row['weight'],
+                                admission_type_id=row['admission_type_id'],
+                                discharge_disposition_id=row['discharge_disposition_id'],
+                                admission_source_id=row['admission_source_id'],
+                                time_in_hospital=row['time_in_hospital'],
+                                payer_code=row['payer_code'],
+                                medical_specialty=row['medical_specialty'],
+                                num_lab_procedures=row['num_lab_procedures'],
+                                num_procedures=row['num_procedures'],
+                                num_medications=row['num_medications'],
+                                number_outpatient=row['number_outpatient'],
+                                number_emergency=row['number_emergency'],
+                                number_inpatient=row['number_inpatient'],
+                                diag_1=row['diag_1'],
+                                diag_2=row['diag_2'],
+                                diag_3=row['diag_3'],
+                                number_diagnoses=row['number_diagnoses'],
+                                max_glu_serum=row['max_glu_serum'],
+                                A1Cresult=row['A1Cresult'],
+                                metformin=row['metformin'],
+                                repaglinide=row['repaglinide'],
+                                nateglinide=row['nateglinide'],
+                                chlorpropamide=row['chlorpropamide'],
+                                glimepiride=row['glimepiride'],
+                                acetohexamide=row['acetohexamide'],
+                                glipizide=row['glipizide'],
+                                glyburide=row['glyburide'],
+                                tolbutamide=row['tolbutamide'],
+                                pioglitazone=row['pioglitazone'],
+                                rosiglitazone=row['rosiglitazone'],
+                                acarbose=row['acarbose'],
+                                miglitol=row['miglitol'],
+                                troglitazone=row['troglitazone'],
+                                tolazamide=row['tolazamide'],
+                                examide=row['examide'],
+                                citoglipton=row['citoglipton'],
+                                insulin=row['insulin'],
+                                glyburide_metformin=row['glyburide-metformin'],
+                                glipizide_metformin=row['glipizide-metformin'],
+                                glimepiride_pioglitazone=row['glimepiride-pioglitazone'],
+                                metformin_rosiglitazone=row['metformin-rosiglitazone'],
+                                metformin_pioglitazone=row['metformin-pioglitazone'],
+                                change=row['change'],
+                                diabetesMed=row['diabetesMed'],
+                                readmitted=row['readmitted'])
+        session.add(diabetes)
+
+
+    print("***session before commit***",session)
+    session.commit()
+    # print("*** example query results:", session.execute(text('SELECT * FROM Diabetes')))
+    session.close()
+
+
 
 def clean_data(data):
     print('***clean_data***', data)
     #leer data de diabetes_clean
-    df=read_data("Diabetes")
+    df=read_data("diabetes")
     Rep = df.replace('?', np.NaN)
     nacheck = Rep.isnull().sum()
     #nacheck
-    datacopy = df.drop(['id', 'weight', 'payer_code', 'medical_specialty'], axis=1)
-    datacopy['30readmit'] = np.where(datacopy['readmitted'] == 'NO', 0, 1)
+    datacopy = df.drop(['weight', 'payer_code', 'medical_specialty'], axis=1)
+    datacopy['readmit'] = np.where(datacopy['readmitted'] == 'NO', 0, 1)
     datacopy = datacopy[((datacopy.discharge_disposition_id != 11) &
                          (datacopy.discharge_disposition_id != 13) &
                          (datacopy.discharge_disposition_id != 14) &
@@ -139,7 +277,6 @@ def clean_data(data):
     data1[listnormal] = normal.fit_transform(data1[listnormal])
     return data1
 
-
 def read_data(data):
     print('***read_data***',data)
     session, engine = connect_database()
@@ -155,14 +292,140 @@ def read_data(data):
     session.close()
     return diabetes
 
+def insert_data_clean(diabetesCleanData):
+    print('***insert_data***')
+    # Connect to the database
+    session, engine = connect_database()
+    print("session",session)
+    print("engine", engine)
+    # Define the table schema
+    Base = declarative_base()
+    # Define diabetes table model
+    
+    class Diabetesclean(Base):
+        __tablename__ = 'diabetes_clean'      
+        id = Column(Integer, primary_key=True)
+        race = Column(String)
+        gender = Column(String)
+        age = Column(String)
+        discharge_disposition_id = Column(Integer)
+        admission_source_id = Column(Integer)
+        time_in_hospital = Column(Integer)
+        num_lab_procedures = Column(Integer)
+        num_procedures = Column(Integer)
+        num_medications = Column(Integer)
+        number_outpatient = Column(Integer)
+        number_emergency = Column(Integer)
+        number_inpatient = Column(Integer)
+        diag_1 = Column(String)
+        diag_2 = Column(String)
+        diag_3 = Column(String)
+        number_diagnoses = Column(Integer)
+        max_glu_serum = Column(String)
+        A1Cresult = Column(String)
+        metformin = Column(String)
+        repaglinide = Column(String)
+        nateglinide = Column(String)
+        chlorpropamide = Column(String)
+        glimepiride = Column(String)
+        acetohexamide = Column(String)
+        glipizide = Column(String)
+        glyburide = Column(String)
+        tolbutamide = Column(String)
+        pioglitazone = Column(String)
+        rosiglitazone = Column(String)
+        acarbose = Column(String)
+        miglitol = Column(String)
+        troglitazone = Column(String)
+        tolazamide = Column(String)
+        examide = Column(String)
+        citoglipton = Column(String)
+        insulin = Column(String)
+        glyburide_metformin = Column(String)
+        glipizide_metformin = Column(String)
+        glimepiride_pioglitazone = Column(String)
+        metformin_rosiglitazone = Column(String)
+        metformin_pioglitazone = Column(String)
+        change = Column(String)
+        diabetesMed = Column(String)
+        readmit = Column(Integer)
 
-def train_model(data: str = 'Diabetes_clean'):
+    print('Base',Base)
+    # Create table if it doesn't exist
+    Base.metadata.create_all(bind=engine)
+    # Insert the data into the table
+    print('Insert the data into the table')
+    diabetes_clean_table = Table('diabetes_clean',Base.metadata, autoload=True)
+    # Print schema of the diabetes table
+    print("diabetes_table:",diabetes_clean_table)
+    # Create a connection object
+    print("*** example query results:",session.execute(text('SELECT * FROM diabetes_clean order by id desc limit 10')))
+    
+    diabetesCleanData.columns
+
+    for i, row in diabetesCleanData.iterrows():
+        print("***i:",i)
+        diabetes_clean = Diabetesclean( race=row['race'],
+                                        gender=row['gender'],
+                                        age=row['age'],
+                                        discharge_disposition_id=row['discharge_disposition_id'],
+                                        admission_source_id=row['admission_source_id'],
+                                        time_in_hospital=row['time_in_hospital'],
+                                        num_lab_procedures=row['num_lab_procedures'],
+                                        num_procedures=row['num_procedures'],
+                                        num_medications=row['num_medications'],
+                                        number_outpatient=row['number_outpatient'],
+                                        number_emergency=row['number_emergency'],
+                                        number_inpatient=row['number_inpatient'],
+                                        diag_1=row['diag_1'],
+                                        diag_2=row['diag_2'],
+                                        diag_3=row['diag_3'],
+                                        number_diagnoses=row['number_diagnoses'],
+                                        max_glu_serum=row['max_glu_serum'],
+                                        A1Cresult=row['A1Cresult'],
+                                        metformin=row['metformin'],
+                                        repaglinide=row['repaglinide'],
+                                        nateglinide=row['nateglinide'],
+                                        chlorpropamide=row['chlorpropamide'],
+                                        glimepiride=row['glimepiride'],
+                                        acetohexamide=row['acetohexamide'],
+                                        glipizide=row['glipizide'],
+                                        glyburide=row['glyburide'],
+                                        tolbutamide=row['tolbutamide'],
+                                        pioglitazone=row['pioglitazone'],
+                                        rosiglitazone=row['rosiglitazone'],
+                                        acarbose=row['acarbose'],
+                                        miglitol=row['miglitol'],
+                                        troglitazone=row['troglitazone'],
+                                        tolazamide=row['tolazamide'],
+                                        examide=row['examide'],
+                                        citoglipton=row['citoglipton'],
+                                        insulin=row['insulin'],
+                                        glyburide_metformin=row['glyburide_metformin'],
+                                        glipizide_metformin=row['glipizide_metformin'],
+                                        glimepiride_pioglitazone=row['glimepiride_pioglitazone'],
+                                        metformin_rosiglitazone=row['metformin_rosiglitazone'],
+                                        metformin_pioglitazone=row['metformin_pioglitazone'],
+                                        change=row['change'],
+                                        diabetesMed=row['diabetesMed'],
+                                        readmit = row['readmit'])
+
+
+        session.add(diabetes_clean)
+
+
+    print("***session before commit***",session)
+    session.commit()
+    # print("*** example query results:", session.execute(text('SELECT * FROM diabetes_clean')))
+    session.close()
+
+def train_model(data: str = 'diabetes_clean'):
     print("***train_model***")
     clean_df = read_data(data)  # read data from data base
     # Let's store readmitted in y and rest of the columns in X,
 
-    Y = clean_df['30readmit']
-    X = clean_df.drop(['30readmit'], axis=1)
+    Y = clean_df['readmit']
+    X = clean_df.drop(['readmit'], axis=1)
     X = pd.get_dummies(X)
 
     # Splitting the data into training and vallidation data sets. The training data will contain 80 % of the data and validation will contain remaining 20%
@@ -178,7 +441,7 @@ def train_model(data: str = 'Diabetes_clean'):
     mlflow.autolog(log_model_signatures=True, log_input_examples=True)
 
     # Set up the data
-    s = setup(clean_df, target='30readmit', transform_target=True, log_experiment=True,
+    s = setup(clean_df, target='readmit', transform_target=True, log_experiment=True,
               experiment_name='Experimento proyecto final MLOPS 2023')
     # Compare models
     best_models = compare_models(n_select=10, sort='R2', fold=5)
