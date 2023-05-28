@@ -23,7 +23,7 @@ from sqlalchemy.ext.declarative import declarative_base
 DB_NAME= "postgres"
 DB_USER="airflow"
 DB_PASSWORD="airflow"
-DB_HOST="192.168.3.157"
+DB_HOST="192.168.10.18"
 DB_PORT="5432"
 os.environ['DB_NAME']=DB_NAME
 os.environ['DB_USER']=DB_USER
@@ -189,13 +189,11 @@ def insert_data(diabetes):
 
 
 
-def clean_data(data):
-    print('***clean_data***', data)
-    #leer data de diabetes_clean
-    df=read_data("diabetes")
-    Rep = df.replace('?', np.NaN)
-    nacheck = Rep.isnull().sum()
-    #nacheck
+def clean_data(**context):
+    print('***clean_data***', context)
+    df=context['ti'].xcom_pull(task_ids='read_data', key='data')
+    Rep = df.replace('?', str(np.NaN))
+
     datacopy = df.drop(['weight', 'payer_code', 'medical_specialty'], axis=1)
     datacopy['readmit'] = np.where(datacopy['readmitted'] == 'NO', 0, 1)
     datacopy = datacopy[((datacopy.discharge_disposition_id != 11) &
@@ -275,9 +273,10 @@ def clean_data(data):
     normal = StandardScaler()
 
     data1[listnormal] = normal.fit_transform(data1[listnormal])
-    return data1
+    context['ti'].xcom_push(key='cleaned_data', value=data1)
 
-def read_data(data):
+def read_data(**context):
+    data = 'diabetes'
     print('***read_data***',data)
     session, engine = connect_database()
     print('***session***', session)
@@ -289,10 +288,12 @@ def read_data(data):
     print('***diabetes***', diabetes.shape)
     print('***diabetes data:***', diabetes.head())
     print(diabetes)
+    context['ti'].xcom_push(key='data', value=diabetes)
     session.close()
     return diabetes
 
-def insert_data_clean(diabetesCleanData):
+def insert_data_clean(**context):
+    diabetesCleanData =  context['ti'].xcom_pull(task_ids='clean_data', key='cleaned_data')
     print('***insert_data***')
     # Connect to the database
     session, engine = connect_database()
@@ -360,8 +361,6 @@ def insert_data_clean(diabetesCleanData):
     print("diabetes_table:",diabetes_clean_table)
     # Create a connection object
     print("*** example query results:",session.execute(text('SELECT * FROM diabetes_clean order by id desc limit 10')))
-    
-    diabetesCleanData.columns
 
     for i, row in diabetesCleanData.iterrows():
         print("***i:",i)
@@ -419,9 +418,25 @@ def insert_data_clean(diabetesCleanData):
     # print("*** example query results:", session.execute(text('SELECT * FROM diabetes_clean')))
     session.close()
 
+def read_data_clean():
+    data = 'diabetes_clean'
+    print('***read_data***',data)
+    session, engine = connect_database()
+    print('***session***', session)
+    # Execute a SELECT query on the diabetes table
+    query = text("SELECT * FROM "+data)
+    result = session.execute(query)
+    # Create a pandas DataFrame from the query result
+    diabetes = pd.DataFrame(result.fetchall(), columns=result.keys())
+    print('***diabetes***', diabetes.shape)
+    print('***diabetes data:***', diabetes.head())
+    print(diabetes)
+    session.close()
+    return diabetes
+
 def train_model(data: str = 'diabetes_clean'):
     print("***train_model***")
-    clean_df = read_data(data)  # read data from data base
+    clean_df = read_data_clean()  # read data from data base
     # Let's store readmitted in y and rest of the columns in X,
 
     Y = clean_df['readmit']
@@ -445,11 +460,8 @@ def train_model(data: str = 'diabetes_clean'):
               experiment_name='Experimento proyecto final MLOPS 2023')
     # Compare models
     best_models = compare_models(n_select=10, sort='R2', fold=5)
-
-    # compare models
-    best = compare_models()
     # finalize the model
-    final_best = finalize_model(best)
+    final_best = finalize_model(best_models)
     # save model to disk
     save_model(final_best, 'final_best_production_Last_Project_MLOPS')
 
