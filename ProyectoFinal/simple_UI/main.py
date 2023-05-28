@@ -231,7 +231,7 @@ def main():
             data = inputs
             # Make a POST request to  FastAPI endpoint
             
-            response = requests.post("http://localhost:8503/do_inference/diabetes", json=data)
+            response = requests.post("http://10.43.102.111:8503/do_inference/diabetes", json=data)
     
             # Check if the request was successful
             if response.status_code == 200:
