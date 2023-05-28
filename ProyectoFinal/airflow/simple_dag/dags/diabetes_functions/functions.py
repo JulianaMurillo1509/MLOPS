@@ -19,6 +19,9 @@ from pycaret.regression import *
 import mlflow
 from mlflow.tracking import MlflowClient
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, MetaData, Column, Integer, String, Float, Table, text
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import NoSuchTableError
 
 DB_NAME= "postgres"
 DB_USER="airflow"
@@ -191,6 +194,7 @@ def insert_data(diabetes):
 
 def clean_data(**context):
     print('***clean_data***', context)
+    print("***delete_data***:",delete_data())
     df=context['ti'].xcom_pull(task_ids='read_data', key='data')
     Rep = df.replace('?', str(np.NaN))
 
@@ -520,3 +524,23 @@ def train_model(data: str = 'diabetes_clean'):
     metricR2 = metrics.r2_score(Y_test, y_pred)
     print("R2 Score:", metricR2)
     return f"This model was trained with version {latest_version} and has an R2 score of {metricR2}"
+
+
+def delete_data():
+    print('***delete_data***')
+    session, engine = connect_database()
+    # define the table to drop
+    # Connect to the database and get a table object
+    with engine.connect() as conn:
+        try:
+            # Get the table object
+            metadata = MetaData()
+            table = Table('diabetes_clean', metadata, autoload_with=engine)
+            # Drop the table
+            table.drop(bind=conn)
+        except NoSuchTableError as e:
+            raise Exception(e)
+
+    session.close()
+
+    return "data deletion successful"
