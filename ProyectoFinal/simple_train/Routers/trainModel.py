@@ -44,7 +44,7 @@ def connect_database():
     #engine = create_engine('postgresql://myuser:' + DB_PASSWORD + '@' + DB_HOST + '/mydatabase')
     #engine = create_engine('postgresql://airflow:' + DB_PASSWORD + '@' + DB_HOST + '/postgres')
     # postgresql+psycopg2://airflow:***@postgres/airflow
-    engine = create_engine('postgresql+psycopg2://airflow:airflow@localhost:5432/postgres')
+    engine = create_engine('postgresql+psycopg2://airflow:airflow@10.43.102.111:5432/postgres')
     Session = sessionmaker(bind=engine)
     session = Session()
     print("session",session)
@@ -215,7 +215,7 @@ def clean_data(df):
     Rep = df.replace('?', np.NaN) 
     nacheck = Rep.isnull().sum()
     datacopy= df.drop(['id','weight','payer_code','medical_specialty'],axis=1)
-    datacopy['30readmit'] = np.where(datacopy['readmitted'] == 'NO', 0, 1)
+    datacopy['readmit'] = np.where(datacopy['readmitted'] == 'NO', 0, 1)
     datacopy = datacopy[((datacopy.discharge_disposition_id != 11) & 
                                           (datacopy.discharge_disposition_id != 13) &
                                           (datacopy.discharge_disposition_id != 14) & 
@@ -323,15 +323,15 @@ async def create_upload_file(file: UploadFile = File(...)):
 
 
 @router.get("/train")
-async def train_model(data:str='diabetes'):
+async def train_model(data:str='diabetes_clean'):
     print("***train_model***")
     df = read_data(data) #read data from data base
     clean_df = clean_data(df)
 
     #Let's store readmitted in y and rest of the columns in X,
 
-    Y = clean_df['30readmit']
-    X = clean_df.drop(['30readmit'], axis =1)
+    Y = clean_df['readmit']
+    X = clean_df.drop(['readmit'], axis =1)
     X = pd.get_dummies(X)
 
     #Splitting the data into training and vallidation data sets. The training data will contain 80 % of the data and validation will contain remaining 20%
@@ -342,13 +342,13 @@ async def train_model(data:str='diabetes'):
 
     
     # Connect to MLflow
-    mlflow.set_tracking_uri("http://10.43.102.111:5000")
+    mlflow.set_tracking_uri("http://localhost:5000")
 
     # Enable autologging in MLflow
     mlflow.autolog(log_model_signatures=True, log_input_examples=True)
 
     # Set up the data
-    s = setup(clean_df, target = '30readmit', transform_target = True, log_experiment = True, experiment_name = 'Experimento proyecto final MLOPS 2023')
+    s = setup(clean_df, target = 'readmit', transform_target = True, log_experiment = True, experiment_name = 'Experimento proyecto final MLOPS 2023')
     # Compare models
     best_models = compare_models(n_select=10, sort='R2', fold=5)
 
